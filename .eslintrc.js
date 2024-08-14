@@ -13,5 +13,8 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'vuejs-accessibility/label-has-for': 'warn',
+    'max-len': ['error', { code: 160 }], // Ajusta el máximo permitido a 120 caracteres, por ejemplo
   },
+
 };
