@@ -1,5 +1,6 @@
 <template>
   <div>
+    <NavigationBar></NavigationBar>
     <div>
       <p>COMPRA</p>
 
@@ -45,10 +46,14 @@
 </template>
 
 <script>
+import NavigationBar from '@/components/NavigationBar.vue';
 // import CryptoService from '@/services/CryptoService';
 
 export default {
   name: 'BuyingAndSellingView',
+  components: {
+    NavigationBar,
+  },
   data() {
     return {
       names: [], // Cambié de objeto a array para poder iterar

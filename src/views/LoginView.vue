@@ -8,10 +8,9 @@
       <label for="password">Enter your password:</label>
       <input type="password" id="password" v-model="password" placeholder="Enter your password">
       <button type="submit">START</button>
-
-      <p v-if="cryptoValueQuote.argenbtc">Ask price for ArgenBTC: {{ cryptoValueQuote.argenbtc.ask }}</p>
-
     </form>
+
+    <p v-if="errorMessage" id="error-mensaje">{{errorMessage}}</p>
 
       <!-- Aquí van los CARTELES CON LOS PRECIOS QUE SE DEBERIAN ACTUALIZAR CADA CIERTO TIEMPO -->
 
@@ -20,7 +19,6 @@
 
 <script>
 import { mapActions } from 'vuex';
-import CryptoService from '@/services/CryptoService';
 
 export default {
   name: 'LoginView',
@@ -28,40 +26,32 @@ export default {
     return {
       password: '',
       cryptoValueQuote: {},
+      errorMessage: '',
     };
   },
   methods: { // Methods: acciones que quiero realizar
     ...mapActions(['updatePassword']), // Función de Vuex que permite mapear acciones como métodos de tu componente Vue.
     submitForm() {
-      this.updatePassword(this.password);
-      this.$router.push({ name: 'buying-and-selling' });
-    },
-  },
+      const { password } = this;
+      const isValidLength = password.length === 8;
+      const hasLetter = /[a-zA-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
 
-  created() {
-    CryptoService.getPrice().then((response) => {
-      console.log(response.data); // Para depurar y ver la estructura de la respuesta
-      this.cryptoValueQuote = response.data;
-    }).catch((error) => {
-      console.error('Error fetching crypto price:', error);
-    });
+      if (!isValidLength || !hasLetter || !hasNumber) {
+        this.errorMessage = 'The password must be 8 characters and alphanumeric.';
+      } else {
+        this.updatePassword(this.password);
+        this.errorMessage = '';
+        this.$router.push({ name: 'buying-and-selling' });
+      }
+    },
   },
 };
 </script>
 
 <style>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+#error-mensaje {
+  color: red;
+  font-size: 14px;
 }
 </style>
