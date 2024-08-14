@@ -1,19 +1,36 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '../views/HomeView.vue';
+
+import InvestmentAnalysisView from '@/views/InvestmentAnalysisView.vue';
+import MovementHistoryView from '@/views/MovementHistoryView.vue';
+import CurrentStatusAnalysisView from '@/views/CurrentStatusAnalysis.vue';
+import LoginView from '../views/LoginView.vue';
+import BuyingAndSellingView from '../views/BuyingAndSellingView.vue';
 
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView,
+    name: 'login',
+    component: LoginView,
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
+    path: '/buying-and-selling',
+    name: 'buying-and-selling',
+    component: BuyingAndSellingView,
+  },
+  {
+    path: '/movement-history',
+    name: 'movement-hisory',
+    component: MovementHistoryView,
+  },
+  {
+    path: '/current-status-analysis',
+    name: 'current-status-analysis',
+    component: CurrentStatusAnalysisView,
+  },
+  {
+    path: '/investment-analysis',
+    name: 'investment-analysis',
+    component: InvestmentAnalysisView,
   },
 ];
 
