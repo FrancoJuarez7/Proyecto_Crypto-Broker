@@ -3,14 +3,15 @@ import { createStore } from 'vuex';
 export default createStore({
 
   // Variables que va a necesitar mi APP.
-  state() {
-    return {
-      password: '',
-    };
+  state: {
+    password: '',
   },
 
   // Para no acceder directamente al estado o para filtrar info,calculan o filtran datos basados en el estado actual
   getters: {
+    password(state) {
+      return state.password;
+    },
   },
 
   /* Las mutaciones son funciones síncronas que reciben el estado actual y un payload (datos necesarios para la modificación) como argumentos y
