@@ -16,8 +16,11 @@ export default {
     return apiClient1.get(`/${exchange}/${coin}/ARS/${volumen}`);
   },
 
-  postloadpurchase(objectsDataPurchase) {
+  PostSaveCryptoPurchase(objectsDataPurchase) {
     return apiClient2.post('/transactions', objectsDataPurchase);
   },
 
+  PostSaveCryptoSale(objectsDataSale) {
+    return apiClient2.post('/transactions', objectsDataSale);
+  },
 };

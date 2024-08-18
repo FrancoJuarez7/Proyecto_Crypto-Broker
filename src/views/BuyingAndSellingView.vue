@@ -74,7 +74,7 @@
 
     <br>
 
-    <p v-if="errorMessage">{{ errorMessage }}</p>
+    <p v-if="errorMessageSell">{{ errorMessageSell }}</p>
 
   </div>
 </template>
@@ -91,7 +91,7 @@ export default {
   },
   data() {
     return {
-      typesOfCoins: ['BTC', 'ETC', 'USDT', 'USDC', 'DAI', 'UXD', 'USDP', 'WLD', 'BNB', 'SOL', 'XRP', 'ADA', 'AVAX', 'DOGE', 'TRX', 'LINK', 'DOT', 'MATIC',
+      typesOfCoins: ['BTC', 'ETH', 'USDT', 'USDC', 'DAI', 'UXD', 'USDP', 'WLD', 'BNB', 'SOL', 'XRP', 'ADA', 'AVAX', 'DOGE', 'TRX', 'LINK', 'DOT', 'MATIC',
         'SHIB', 'LTC', 'BHC', 'EOS', 'XLM', 'FTM', 'AAVE', 'UNI', 'ALGO', 'BAT', 'PAXG', 'CAKE', 'AXS', 'SLP', 'MANA', 'SAND', 'CHZ'],
       selectedBuyCrypto: '',
       selectedSellCrypto: '',
@@ -106,6 +106,7 @@ export default {
       buyPrice: null,
       sellPrice: null,
       errorMessageBuy: '',
+      errorMessageSell: '',
     };
   },
   methods: {
@@ -128,44 +129,103 @@ export default {
           });
       }
     },
-    makePurchase() {
-      if (this.password && this.quantityBuy > 0 && this.buyPrice > 0) {
-        const objectsDataPurchase = {
-          user_id: this.password, // Corregido de 'usert_id' a 'user_id'
-          action: 'purchase',
-          crypto_code: this.selectedBuyCrypto,
-          crypto_amount: this.quantityBuy,
-          money: this.buyPrice,
-          datetime: this.getDateandTime(),
-        };
+    validation(type) {
+      const validations = {
+        purchase: [
+          { condition: !this.password, message: 'Password is required.' },
+          { condition: !this.selectedExchangeBuyCrypto, message: 'No exchange has been selected.' },
+          { condition: !this.selectedBuyCrypto, message: 'No cryptocurrency has been selected.' },
+          { condition: this.quantityBuy <= 0, message: 'The quantity must be greater than 0.' },
+          { condition: this.buyPrice <= 0, message: 'The purchase price must be greater than 0.' },
+        ],
+        sale: [
+          { condition: !this.selectedExchangeSellCrypto, message: 'No exchange has been selected.' },
+          { condition: !this.selectedSellCrypto, message: 'No cryptocurrency has been selected.' },
+          { condition: this.quantitySell <= 0, message: 'The quantity must be greater than 0.' },
+          { condition: this.sellPrice <= 0, message: 'The sale price must be greater than 0.' },
+        ],
+      };
 
-        CryptoService.postloadpurchase(objectsDataPurchase)
-          .then(() => {
-            alert('Purchase completed successfully!');
-            this.resetPurchaseForm(); // Resetea el formulario después de la compra
-          })
-          .catch((error) => {
-            console.error('Error during purchase:', error);
-            alert('There was an error processing your purchase.');
-          });
-      } else {
-        this.errorMessageBuy = 'Please make sure all required fields are filled in. Please note that the amount to buy or sell cannot be less than 0.';
-        this.resetPurchaseForm();
+      /* Creo los 2 arrays de objetos (purchase y sale) y aca  en esta funcion con el type que recibe consulta, en esta funcion es una clave.
+       purchse(clave) : [arrays de obbetos] (valor) */
+
+      const failedValidation = validations[type].find((validation) => validation.condition);
+
+      if (failedValidation) {
+        if (type === 'purchase') {
+          this.errorMessageBuy = failedValidation.message;
+        } else if (type === 'sale') {
+          this.errorMessageSell = failedValidation.message;
+        }
+        return false; // Return false if there is an error
       }
+
+      if (type === 'purchase') {
+        this.errorMessageBuy = '';
+      } else if (type === 'sale') {
+        this.errorMessageSell = '';
+      }
+
+      return true; // Return true if validation passed
+    },
+    makePurchase() {
+      if (!this.validation('purchase')) return; // Si esto es falso, es porque no paso las validaciones
+
+      // Si todas las validaciones pasan, proceder con la compra
+      const objectsDataPurchase = {
+        user_id: this.password,
+        action: 'purchase',
+        crypto_code: this.selectedBuyCrypto,
+        crypto_amount: this.quantityBuy,
+        money: this.buyPrice,
+        datetime: this.getDateandTime(),
+      };
+
+      console.log(objectsDataPurchase);
+
+      CryptoService.PostSaveCryptoPurchase(objectsDataPurchase)
+        .then(() => {
+          alert('Purchase completed successfully!');
+          this.resetPurchaseForm(); // Resetea el formulario después de la compra
+        })
+        .catch((error) => {
+          console.error('Error during purchase:', error);
+          alert('There was an error processing your purchase.');
+        });
     },
     resetPurchaseForm() {
       this.selectedBuyCrypto = '';
       this.quantityBuy = '';
       this.selectedExchangeBuyCrypto = '';
       this.buyPrice = null;
+      this.selectedSellCrypto = '';
+      this.quantitySell = '';
+      this.selectedExchangeSellCrypto = '';
+      this.sellPrice = null;
     },
     makeSale() {
-      CryptoService.getPrice(this.selectedExchangeSellCrypto, this.selectedSellCrypto, this.quantitySell)
-        .then((response) => {
-          this.sellPrice = response.data.totalBid;
+      if (!this.validation('sale')) return; // Si esto es falso, es porque no paso las validaciones
+
+      // Si todas las validaciones pasan, proceder con la compra
+      const objectsDataSale = {
+        user_id: this.password,
+        action: 'sale',
+        crypto_code: this.selectedSellCrypto,
+        crypto_amount: this.quantitySell,
+        money: this.sellPrice,
+        datetime: this.getDateandTime(),
+      };
+
+      // console.log(objectsDataSale);
+
+      CryptoService.PostSaveCryptoSale(objectsDataSale)
+        .then(() => {
+          alert('Purchase completed successfully!');
+          this.resetPurchaseForm();
         })
         .catch((error) => {
-          console.error(error);
+          console.error('Error during purchase:', error);
+          alert('There was an error processing your purchase.');
         });
     },
     getDateandTime() {
@@ -181,13 +241,14 @@ export default {
   },
   computed: {
     ...mapGetters(['password']),
+
     priceMessage() {
       this.fetchPrice();
       if (this.selectedExchangeBuyCrypto !== null && this.selectedBuyCrypto !== null && this.quantityBuy !== null && this.buyPrice !== null) {
-        return `${this.quantityBuy} ${this.selectedBuyCrypto} at ${this.selectedExchangeBuyCrypto} = ARS${this.buyPrice}`;
+        return `${this.quantityBuy} ${this.selectedBuyCrypto} AT ${this.selectedExchangeBuyCrypto} = ARS ${this.buyPrice}`;
       }
       if (this.selectedExchangeSellCrypto !== null && this.selectedSellCrypto !== null && this.quantitySell !== null && this.sellPrice !== null) {
-        return `${this.quantitySell} ${this.selectedSellCrypto} at ${this.selectedExchangeSellCrypto} = ARS${this.sellPrice}`;
+        return `${this.quantitySell} ${this.selectedSellCrypto} AT ${this.selectedExchangeSellCrypto} = ARS ${this.sellPrice}`;
       }
       return '';
     },

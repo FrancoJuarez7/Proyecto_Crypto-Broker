@@ -5,7 +5,7 @@
 
     <form @submit.prevent="submitForm">
 
-      <label for="password">Enter your password:</label>
+      <label for="password" >Enter your password:</label>
       <input type="password" id="password" v-model="password" placeholder="Enter your password">
       <button type="submit">START</button>
       <p>Attention: The key must contain 8 characters and must be alphanumeric.</p>
