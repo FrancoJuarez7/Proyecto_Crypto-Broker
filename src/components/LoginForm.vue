@@ -10,7 +10,7 @@
 
         <p v-if="errorMessage" id="error-mensaje">{{errorMessage}}</p>
     </div>
-  </template>
+</template>
 
 <script>
 

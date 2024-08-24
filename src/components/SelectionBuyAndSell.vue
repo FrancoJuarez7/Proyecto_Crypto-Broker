@@ -101,27 +101,38 @@ export default {
     fetchPrice() {
       this.isButtonDisabled = false;
 
-      if (this.selectedExchangeBuyCrypto !== null && this.selectedBuyCrypto !== null && this.quantityBuy !== null && this.quantityBuy > 0) {
-        CryptoService.getPrice(this.selectedExchangeBuyCrypto, this.selectedBuyCrypto, this.quantityBuy)
-          .then((response) => {
+      if (this.selectedExchangeBuyCrypto !== '' && this.selectedBuyCrypto !== '' && this.quantityBuy !== '' && this.quantityBuy > 0) {
+        this.fetchCryptoPrice(this.selectedExchangeBuyCrypto, this.selectedBuyCrypto, this.quantityBuy, 'buy');
+      } else if (this.selectedExchangeSellCrypto !== '' && this.selectedSellCrypto !== '' && this.quantitySell !== '' && this.quantitySell > 0) {
+        this.fetchCryptoPrice(this.selectedExchangeSellCrypto, this.selectedSellCrypto, this.quantitySell, 'sell');
+      } else {
+        this.isButtonDisabled = false;
+      }
+    },
+    fetchCryptoPrice(exchange, crypto, quantity, type) {
+      CryptoService.getPrice(exchange, crypto, quantity)
+        .then((response) => {
+          if (type === 'buy') {
             this.buyPrice = response.data.totalAsk;
-          })
-          .catch((error) => {
-            console.log(error);
+            this.errorMessageBuy = '';
+          } else {
+            this.sellPrice = response.data.totalBid;
+            this.errorMessageSell = '';
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          if (type === 'buy') {
             this.errorMessageBuy = 'There was an error when consulting the prices in the API of the www.criptoya.com platform.';
             this.isButtonDisabled = true;
-          });
-      } else if (this.selectedExchangeSellCrypto !== null && this.selectedSellCrypto !== null && this.quantitySell !== null && this.quantitySell > 0) {
-        CryptoService.getPrice(this.selectedExchangeSellCrypto, this.selectedSellCrypto, this.quantitySell)
-          .then((response) => {
-            this.sellPrice = response.data.totalBid;
-          })
-          .catch((error) => {
-            console.log(error);
+          } else {
             this.errorMessageSell = 'There was an error when consulting the prices in the API of the www.criptoya.com platform.';
             this.isButtonDisabled = true;
-          });
-      }
+          }
+        })
+        .finally(() => {
+          this.isButtonDisabled = false; // Re-enable button after operation
+        });
     },
     validation(type) {
       const validations = {
