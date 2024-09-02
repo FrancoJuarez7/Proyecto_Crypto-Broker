@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <NavigationBar></NavigationBar>
     <SelectionBuyAndSell></SelectionBuyAndSell>
   </div>
@@ -21,5 +21,9 @@ export default {
 </script>
 
 <style scoped>
-/* Aquí va tu CSS */
+.container {
+  background-color: black;
+  color: white;
+  padding: 20px;
+}
 </style>

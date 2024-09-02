@@ -9,9 +9,8 @@ const apiClient2 = axios.create({
   headers: { 'x-apikey': '60eb09146661365596af552f' },
 });
 
-// api/{coin}/{fiat}/{volumen} --> /api/BTC/ARS/1
+// Exportando los servicios
 export default {
-
   getPrice(exchange, coin, volumen) {
     return apiClient1.get(`/${exchange}/${coin}/ARS/${volumen}`);
   },
@@ -22,5 +21,11 @@ export default {
 
   PostSaveCryptoSale(objectsDataSale) {
     return apiClient2.post('/transactions', objectsDataSale);
+  },
+
+  // Puedes descomentar este método si lo necesitas en el futuro
+  savedPurchase(userId) {
+    const queryString = `?q={"user_id": "${userId}"}`;
+    return apiClient2.get(`/transactions${queryString}`);
   },
 };
