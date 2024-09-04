@@ -28,4 +28,10 @@ export default {
     const queryString = `?q={"user_id": "${userId}"}`;
     return apiClient2.get(`/transactions${queryString}`);
   },
+
+  /* updateCoins(userId, discountCoins){
+    const queryString = `?q={"user_id": "${userId}"}`;
+    return apiClient2.put(`/transactions${queryString}`);
+  } */
+
 };
