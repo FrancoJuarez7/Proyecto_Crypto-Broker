@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import InvestmentAnalysisView from '@/views/InvestmentAnalysisView.vue';
 import MovementHistoryView from '@/views/MovementHistoryView.vue';
-import CurrentStatusAnalysisView from '@/views/CurrentStatusAnalysis.vue';
+import FinancialAndInvestmentEvaluationView from '@/views/FinancialAndInvestmentEvaluationView.vue';
 import LoginView from '../views/LoginView.vue';
 import BuyingAndSellingView from '../views/BuyingAndSellingView.vue';
 
@@ -23,14 +22,9 @@ const routes = [
     component: MovementHistoryView,
   },
   {
-    path: '/current-status-analysis',
-    name: 'current-status-analysis',
-    component: CurrentStatusAnalysisView,
-  },
-  {
-    path: '/investment-analysis',
-    name: 'investment-analysis',
-    component: InvestmentAnalysisView,
+    path: '/financial-and-investmentEvaluation',
+    name: 'financial-and-investmentEvaluation',
+    component: FinancialAndInvestmentEvaluationView,
   },
 ];
 

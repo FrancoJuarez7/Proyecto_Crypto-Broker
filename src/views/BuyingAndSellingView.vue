@@ -16,14 +16,13 @@ export default {
     SelectionBuyAndSell,
   },
   data() {
+    return {
+      //
+    };
   },
 };
 </script>
 
-<style scoped>
-.container {
-  background-color: black;
-  color: white;
-  padding: 20px;
-}
+<style>
+
 </style>

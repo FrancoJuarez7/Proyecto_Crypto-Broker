@@ -23,7 +23,7 @@
       <input type="number" id="buyAmount" name="amount" v-model="quantityBuy" min="1" max="100" step="1">
       <br>
 
-      <button type="submit" id="btnPurchase" @click="makePurchase" :disabled="isButtonDisabled">BUY</button>
+      <button type="submit" id="btnPurchase" @click="makePurchase">BUY</button>
 
       <br>
       <p v-if="errorMessageBuy" class="error-messages">{{ errorMessageBuy }}</p>
@@ -60,11 +60,11 @@
       <input type="number" id="sellAmount" name="amount" v-model="quantitySell" min="1" max="100" step="1">
       <br>
 
-      <button type="submit" @click="makeSale" :disabled="isButtonDisabled">SALE</button>
+      <button type="submit" @click="makeSale">SALE</button>
 
     <p v-if="errorMessageSell" class="error-messages">{{ errorMessageSell }}</p>
 
-    <p v-if="!errorMessageSell && selectedExchangeSellCrypto && selectedSellCrypto && quantitySell && quantitySell > 0">{{ priceMessage }}</p>
+    <p v-if="!errorMessageSell && selectedExchangeSellCrypto && selectedSellCrypto && quantitySell && quantitySell> 0">{{ priceMessage }}</p>
 
     <br>
 

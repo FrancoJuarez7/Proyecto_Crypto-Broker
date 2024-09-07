@@ -15,6 +15,13 @@ export default {
     return apiClient1.get(`/${exchange}/${coin}/ARS/${volumen}`);
   },
 
+  /* Esta llamada va a ser para obtener todos los precios de todas las criptos, que las voy a mostrar en los carteles en una pagina
+  principal, habia pensaod con el array de todos los nombres, trabajarlo por ese lado para pasarle los nombres, comparar los precios mas
+  bajos para la compra y mas altos para la venta y mostrar
+  fetchSamplePricesForUsers(exchange, coin) {
+    return apiClient1.get(`/${exchange}/${coin}/ARS/${1}`);
+  } */
+
   PostSaveCryptoPurchase(objectsDataPurchase) {
     return apiClient2.post('/transactions', objectsDataPurchase);
   },
@@ -28,10 +35,4 @@ export default {
     const queryString = `?q={"user_id": "${userId}"}`;
     return apiClient2.get(`/transactions${queryString}`);
   },
-
-  /* updateCoins(userId, discountCoins){
-    const queryString = `?q={"user_id": "${userId}"}`;
-    return apiClient2.put(`/transactions${queryString}`);
-  } */
-
 };

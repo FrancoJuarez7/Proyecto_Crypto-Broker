@@ -1,5 +1,4 @@
 <template>
-
   <router-view/>
 </template>
 
@@ -9,7 +8,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: white;
+  background-color:  rgb(30, 35, 41);
+  min-width: 900px;
+  min-height: 700px;
 }
 
 nav {
@@ -18,10 +20,10 @@ nav {
 
 nav a {
   font-weight: bold;
-  color: #2c3e50;
+  color: white;
 }
 
 nav a.router-link-exact-active {
-  color: #42b983;
+  color: #94ebc4;
 }
 </style>

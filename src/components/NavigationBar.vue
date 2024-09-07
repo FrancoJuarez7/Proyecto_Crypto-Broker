@@ -2,8 +2,7 @@
   <nav>
     <router-link to="/buying-and-selling">Buying And Selling</router-link> |
     <router-link to="/movement-history">Movement History</router-link> |
-    <router-link to="/current-status-analysis">Current Status Analysis</router-link> |
-    <router-link to="/investment-analysis">Investment Analysis</router-link> |
+    <router-link to="/financial-and-investmentEvaluation">Financial and Investment Evaluation</router-link> |
     <button class="btn" @click="logout">Log out</button>
   </nav>
 </template>
@@ -16,8 +15,15 @@ export default {
       // Eliminar datos de autenticación
       localStorage.removeItem('authToken');
       sessionStorage.removeItem('userSession');
-      // Redirigir a la pantalla de inicio de sesión
-      this.$router.replace('/'); // Reemplaza la entrada actual en el historial
+
+      // Desactivar la funcionalidad de volver hacia atrás en el historial
+      this.$router.replace('/');
+      window.history.pushState(null, null, window.location.href);
+
+      window.addEventListener('popstate', () => {
+        // Redirigir de nuevo a la pantalla de inicio si el usuario intenta volver atrás
+        this.$router.replace('/');
+      });
     },
   },
 };

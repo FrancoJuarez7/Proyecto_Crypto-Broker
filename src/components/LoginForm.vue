@@ -45,9 +45,9 @@ export default {
 };
 </script>
 
-  <style scoped>
-  #error-mensaje {
+<style scoped>
+#error-mensaje {
   color: red;
   font-size: 14px;
 }
-  </style>
+</style>
