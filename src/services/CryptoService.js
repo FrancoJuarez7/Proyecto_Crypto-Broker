@@ -35,4 +35,12 @@ export default {
     const queryString = `?q={"user_id": "${userId}"}`;
     return apiClient2.get(`/transactions${queryString}`);
   },
+
+  editTransaction(idTransaction, updateTransaction) {
+    return apiClient2.patch(`/transactions/${idTransaction}`, updateTransaction);
+  },
+
+  deleteTransaction(idTransaction) {
+    return apiClient2.delete(`/transactions/${idTransaction}`);
+  },
 };

@@ -2,7 +2,8 @@
   <div class="container">
     <NavigationBar></NavigationBar>
     <div v-if="transactions.length === 0"> Obtaining historical movements ...</div>
-    <div v-else><CryptoDataTable :columnasProp="columnas" :filasProps="filas" :actionsButton="actions"> </CryptoDataTable></div>
+    <div v-else><CryptoDataTable :columnasProp="columnas" :filasProps="filas" :actionsButton="actions" @deletedRow="removeRow"
+    @editRow="updateRow"> </CryptoDataTable></div>
 
       <!-- Muestra el mensaje de error si existe -->
       <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -29,6 +30,7 @@ export default {
   data() {
     return {
       columnasMap: {
+        _id: 'USUARIO',
         action: 'TRANSACTION',
         crypto_code: 'CURRENCY',
         crypto_amount: 'AMOUNT',
@@ -39,7 +41,7 @@ export default {
       filas: [],
       transactions: [],
       errorMessage: '',
-      visibleColumn: ['action', 'crypto_code', 'crypto_amount', 'money', 'datetime'],
+      visibleColumn: ['_id', 'action', 'crypto_code', 'crypto_amount', 'money', 'datetime'], // Claves a mostaar en orden
       actions: true,
     };
   },
@@ -63,10 +65,10 @@ export default {
         return;
       }
 
-      // Extrae las claves de la primera transacción para las columnas
+      // Cada clave de visibleColumn, se mapea con la clave de cada columnasMap para que sea mas legible y se guarda en columnas.
       this.columnas = this.visibleColumn.map((key) => this.columnasMap[key] || key);
 
-      // Mapea las transacciones a filas, eliminando el ID si es necesario
+      // Mapea las transacciones a filas
       this.filas = this.transactions.map((transaction) => this.visibleColumn.map((key) => (key === 'datetime'
         ? this.formatDatetime(transaction[key]) : transaction[key])));
     },
@@ -91,8 +93,32 @@ export default {
 
       // Devuelve en el formato correcto: hora primero, luego fecha
       return `${formattedTime}, ${formattedDate}`;
-    }
-    ,
+    },
+    // Cada indice es una fila, debe ser >= 0 y < la cantidad total de filas para garantizar que se elimina una fila válida.
+    removeRow(rowIndex) {
+      console.log('Removing row at index:', rowIndex);
+      if (rowIndex >= 0 && rowIndex < this.filas.length) {
+        this.filas.splice(rowIndex, 1);
+        /* Esto elimina un valor de la variable filas esto al estar declarado en el data() de VUE, y debido a la reactivida, las filas se
+       actualizará automáticamente en la vista del componente CryptoDataTable. Como this.filas está vinculado al componente a través de las
+       props (:filasProps="filas"), cualquier cambio en this.filas se reflejará automáticamente en la vista. Esto también aplica cuando los
+       datos se pasan al componente usando getRowsAndColumns() que tambien utiliza la variable filas. La reactividad en Vue asegura que las
+       actualizaciones en this.filas se muestren en el componente sin necesidad de actualizaciones manuales. */
+      } else {
+        console.error('Invalid rowIndex:', rowIndex);
+      }
+    },
+    updateRow(idTransaction, updateTransaction) {
+      /* Recorre las filas y busca la primer coincidencia de la fila [CERO] que sea igual al idTransaction. Cuando lo encuentra deja de
+      recorrer. */
+      const rowIndex = this.filas.findIndex((row) => row[0] === idTransaction);
+
+      // -1 es el resultado que devuelve el metodo si no encuentra nada. Pero si encuentra edito [FILA] [COLUMNA]
+      if (rowIndex !== -1) {
+        this.filas[rowIndex][3] = updateTransaction.crypto_amount;
+        this.filas[rowIndex][4] = updateTransaction.money;
+      }
+    },
   },
   computed: {
     ...mapGetters(['password']),
