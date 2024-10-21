@@ -1,78 +1,64 @@
 <template>
-    <p>COMPRA</p>
+  <p>PURCHASE OF CRYPTOCURRENCIES</p>
 
-      <label for="buyCrypto">SELECT THE CRYPTO TO BUY</label>
-      <select id="buyCrypto" v-model="selectedBuyCrypto">
-        <option v-for="(nameCoins, index) in typesOfCoins" :key="index" :value="nameCoins">
-          {{ nameCoins }}
-        </option>
-      </select>
+    <label for="buyCrypto">SELECT THE CRYPTO TO BUY </label>
+    <select id="buyCrypto" v-model="selectedBuyCrypto">
+      <option v-for="(nameCoins, index) in typesOfCoins" :key="index" :value="nameCoins">
+        {{ nameCoins }}
+      </option>
+    </select> <br>
 
-      <br>
+    <label for="buyExchangeCrypto">SELECT THE EXCHANGE TO BUY </label>
+    <select id="buyExchangeCrypto" v-model="selectedExchangeBuyCrypto">
+      <option v-for="(nameExchange, index) in Exchanges" :key="index" :value="nameExchange">
+        {{ nameExchange }}
+      </option>
+    </select> <br>
 
-      <label>SELECT THE EXCHANGE TO BUY</label>
-      <select id="buyExchangeCrypto" v-model="selectedExchangeBuyCrypto">
-        <option v-for="(nameExchange, index) in Exchanges" :key="index" :value="nameExchange">
-          {{ nameExchange }}
-        </option>
-      </select>
-
-      <br>
-
-      <label for="buyAmount">Quantity to purchase</label>
-      <input type="number" id="buyAmount" name="amount" v-model="quantityBuy" min="1" max="100" step="1">
-      <br>
-
-      <button type="submit" id="btnPurchase" @click="makePurchase">BUY</button>
-
-      <br>
-      <p v-if="errorMessageBuy" class="error-messages">{{ errorMessageBuy }}</p>
-
-      <p v-if="!errorMessageBuy && selectedExchangeBuyCrypto && selectedBuyCrypto && quantityBuy && quantityBuy > 0">{{ priceMessage }}</p>
-
-      <br>
-
+    <label for="buyAmount">QUANTITY TO PURCHASE </label>
+    <input type="number" id="buyAmount" name="amount" v-model="quantityBuy" min="0.000001" max="1000000" step="1">
     <br>
 
-    <!-- ******************************************************************************************************************************** -->
+    <button type="submit" id="btnPurchase" @click="makePurchase">BUY</button> <br>
 
-      <p>VENTA</p>
+    <p v-if="errorMessageBuy" class="error-messages">{{ errorMessageBuy }}</p>
 
-      <label for="saleCrypo">SELECT THE CRYPTO TO SELL       </label>
-      <select id="saleCrypto" v-model="selectedSellCrypto">
-        <option v-for="(nameCoins, index) in typesOfCoins" :key="index" :value="nameCoins">
-          {{ nameCoins }}
-        </option>
-      </select>
+    <p v-if="!errorMessageBuy && selectedExchangeBuyCrypto && selectedBuyCrypto && quantityBuy && quantityBuy > 0 "
+      >{{ priceMessageBuy }}</p> <br> <br>
 
-      <br>
+  <!-- ************************************** -->
 
-      <label>SELECT THE EXCHANGE TO SELL         </label>
-      <select id="sellExchangeCrypto" v-model="selectedExchangeSellCrypto">
-        <option v-for="(nameExchange, index) in Exchanges" :key="index" :value="nameExchange">
-          {{ nameExchange }}
-        </option>
-      </select>
+    <p>SALE OF CRYPTOCURRENCIES</p>
 
-      <br>
+    <label for="saleCrypo">SELECT THE CRYPTO TO SELL </label>
+    <select id="saleCrypto" v-model="selectedSellCrypto">
+      <option v-for="(nameCoins, index) in typesOfCoins" :key="index" :value="nameCoins">
+        {{ nameCoins }}
+      </option>
+    </select> <br>
 
-      <label for="sellAmount">Quantity to sell      </label>
-      <input type="number" id="sellAmount" name="amount" v-model="quantitySell" min="1" max="100" step="1">
-      <br>
+    <label for="sellExchangeCrypto">SELECT THE EXCHANGE TO SELL </label>
+    <select id="sellExchangeCrypto" v-model="selectedExchangeSellCrypto">
+      <option v-for="(nameExchange, index) in Exchanges" :key="index" :value="nameExchange">
+        {{ nameExchange }}
+      </option>
+    </select> <br>
 
-      <button type="submit" @click="makeSale">SALE</button>
+    <label for="sellAmount">QUANTITY TO SELL </label>
+    <input type="number" id="sellAmount" name="amount" v-model="quantitySell" min="0.000001" max="100" step="1"> <br>
+
+    <button type="submit" @click="makeSale">SALE</button>
 
     <p v-if="errorMessageSell" class="error-messages">{{ errorMessageSell }}</p>
 
-    <p v-if="!errorMessageSell && selectedExchangeSellCrypto && selectedSellCrypto && quantitySell && quantitySell> 0">{{ priceMessage }}</p>
-
-    <br>
+    <p v-if="!errorMessageSell && selectedExchangeSellCrypto && selectedSellCrypto && quantitySell && quantitySell> 0"
+    >{{ priceMessageSell }}</p> <br>
 
 </template>
 
 <script>
 import CryptoService from '@/services/CryptoService';
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SelectionBuyAndSell',
@@ -90,11 +76,9 @@ export default {
         'SATOSHITANGO', 'KRIPTONMARKET', 'ARGENBTC', 'OKEXP2P', 'TIENDACRYPTO', 'LEMONCASH', 'COCOSCRYPTO', 'BYBIT', 'BINANCE', 'PAYDECEP2P', 'TRUBIT',
         'KUCOINP2P', 'RIPIOEXCHANGE', 'VIBRANT', 'PLUSCRYPTO', 'BYBITP2P', 'CRYPTOMKTPRO', 'BELO', 'CALYPSO', 'BITMONEDERO', 'COINEXP2P', 'DECRYPTO', 'SALDO',
         'HUOBIP2P', 'LEMONCASHP2P', 'BINGXP2P', 'TRUBITP2P', 'LNP2PBOTP2P', 'SYKLOP2P', 'XAPO'],
-      buyPrice: null,
-      sellPrice: null,
       errorMessageBuy: '',
       errorMessageSell: '',
-      resultado: [],
+      isCalling: false,
     };
   },
   watch: {
@@ -106,48 +90,74 @@ export default {
     quantitySell: 'fetchPrice',
   },
   methods: {
-    /* SI LOS DATOS SON CORRECTOS, LLAMA AUTOMATICAMENTE A LA FUNCION QUE LLAMA A LA API PARA MOSTRAR EL MENSAJE, SI NO ESTAN TODOS COMPLETOS, NO
-    LOS LLAMA */
-    fetchPrice() {
-      if (this.selectedExchangeBuyCrypto && this.selectedBuyCrypto && this.quantityBuy && this.quantityBuy > 0) {
-        this.fetchCryptoPrice(this.selectedExchangeBuyCrypto, this.selectedBuyCrypto, this.quantityBuy, 'buy');
-      } else if (this.selectedExchangeSellCrypto && this.selectedSellCrypto && this.quantitySell && this.quantitySell > 0) {
-        this.fetchCryptoPrice(this.selectedExchangeSellCrypto, this.selectedSellCrypto, this.quantitySell, 'sell');
+  /* SI LOS DATOS SON CORRECTOS, LLAMA AUTOMATICAMENTE A LA FUNCION QUE LLAMA A LA API PARA MOSTRAR EL MENSAJE, SI NO ESTAN TODOS COMPLETOS, NO
+  LOS LLAMA */
+    async fetchPrice() {
+      const buyCondition = this.selectedExchangeBuyCrypto && this.selectedBuyCrypto && this.quantityBuy && this.quantityBuy > 0;
+      const sellConditions = this.selectedExchangeSellCrypto && this.selectedSellCrypto && this.quantitySell && this.quantitySell > 0;
+
+      if (this.isCalling) {
+        return;
+      }
+
+      this.isCalling = true;
+
+      try {
+        if (buyCondition) {
+          await this.fetchCryptoPrice({
+            exchange: this.selectedExchangeBuyCrypto,
+            crypto: this.selectedBuyCrypto,
+            quantity: this.quantityBuy,
+            type: 'purchase',
+          });
+
+          console.log(this.purchasePrice);
+
+          if (this.purchasePrice === null || Number.isNaN(this.purchasePrice)) {
+            console.log('ENTRO ACA COMPRA:', this.buyErrorMessage);
+            this.resetBuyFields();
+            this.errorMessageSell = '';
+          }
+
+          this.errorMessageBuy = '';
+          this.errorMessageSell = '';
+        } else if (sellConditions) {
+          await this.fetchCryptoPrice({
+            exchange: this.selectedExchangeSellCrypto,
+            crypto: this.selectedSellCrypto,
+            quantity: this.quantitySell,
+            type: 'sale',
+          });
+
+          if (this.sellPrice === null || Number.isNaN(this.sellPrice)) {
+            console.log('ENTRO ACA VENTA: ', this.saleErrorMessage);
+            this.resetSellFields();
+            this.errorMessageBuy = '';
+          }
+          this.errorMessageBuy = '';
+          this.errorMessageSell = '';
+        }
+      } catch (error) {
+        console.log('Error:', error);
+      } finally {
+        this.isCalling = false;
       }
     },
-    // FUNCION SOLO PARA LLAMAR A LA API Y OBTENER EL DATO QUE NECESITO DEPENDIENTO SI ES COMPRA O VENTA
-    fetchCryptoPrice(exchange, crypto, quantity, type) {
-      CryptoService.getPrice(exchange, crypto, quantity)
-        .then((response) => {
-          // Verifica si la respuesta y los datos son válidos
-          if (response && response.data) {
-            if (type === 'buy') {
-              this.buyPrice = parseFloat(response.data.totalAsk).toFixed(2);
-              this.errorMessageBuy = '';
-            } else if (type === 'sell') {
-              this.sellPrice = parseFloat(response.data.totalBid).toFixed(2);
-              this.errorMessageSell = '';
-            }
-          } else {
-            // Maneja el caso donde la respuesta es vacía o nula
-            console.log('No hay cotización al momento');
-            if (type === 'buy') {
-              this.errorMessageBuy = 'No se encontraron datos de precios para la compra.';
-            } else {
-              this.errorMessageSell = 'No se encontraron datos de precios para la venta.';
-            }
-          }
-        })
-        .catch(() => {
-          if (type === 'buy') {
-            this.errorMessageBuy = 'Hubo un error al consultar los precios de compra en la API de www.criptoya.com.';
-            this.resetPurchaseForm();
-          } else {
-            this.errorMessageSell = 'Hubo un error al consultar los precios de venta en la API de www.criptoya.com.';
-            this.resetPurchaseForm();
-          }
-        });
+
+    // FUNCION QUE RESETE LOS VALORES DE LAS COMPRAS
+    resetBuyFields() {
+      this.selectedBuyCrypto = null;
+      this.selectedExchangeBuyCrypto = null;
+      this.quantityBuy = null;
     },
+
+    // FUNCION QUE RESETE LOS VALORES DE LAS VENTAS
+    resetSellFields() {
+      this.selectedSellCrypto = null;
+      this.selectedExchangeSellCrypto = null;
+      this.quantitySell = null;
+    },
+
     // FUNCION PARA VALIDAR COMPRA y VENTA
     validation(type) {
       // Crea arrays de objetos para validar los datos y los posibles ERRORES.
@@ -165,7 +175,7 @@ export default {
       };
 
       /* Creo los 2 arrays de objetos (purchase y sale) y aca  en esta funcion con el type que recibe consulta, en esta funcion es una clave.
-       purchse(clave) : [arrays de objetos] (valor) */
+     purchse(clave) : [arrays de objetos] (valor) */
 
       const errorMessages = [];
 
@@ -194,18 +204,23 @@ export default {
 
       return true; // Return true if validation passed
     },
-    // FUNCIÓN QUE VALIDA LOS DATOS DE COMPRA; SI SON CORRECTOS, LOS ENVÍA A RESTDB, DE LO CONTRARIO, MUESTRA UN ERROR.
-    makePurchase() {
-      if (!this.validation('purchase')) return; // Si esto es falso, es porque no paso las validaciones
 
-      if (this.buyPrice <= 0) {
+    // FUNCIÓN QUE VALIDA LOS DATOS DE COMPRA; SI SON CORRECTOS, LOS ENVÍA A RESTDB, DE LO CONTRARIO, MUESTRA UN ERROR.
+    async makePurchase() {
+      if (!this.validation('purchase')) {
+        this.resetBuyFields();
+        this.errorMessageSell = '';
+        this.resetSellFields();
+        return; // Si esto es falso, es porque no paso las validaciones
+      }
+
+      if (this.purchasePrice <= 0) {
         this.errorMessageBuy = 'The purchase price must be greater than 0.';
+        this.resetBuyFields();
         return;
       }
 
-      this.fetchPrice(); // Por si el precio llega a variar.
-
-      console.log(this.buyPrice);
+      await this.fetchPrice(); // Por si el precio llega a variar.
 
       // Si todas las validaciones pasan, proceder con la compra
       const objectsDataPurchase = {
@@ -213,76 +228,81 @@ export default {
         action: 'purchase',
         crypto_code: this.selectedBuyCrypto,
         crypto_amount: this.quantityBuy,
-        money: this.buyPrice,
+        money: this.purchasePrice,
         datetime: this.getDateandTime(),
       };
 
-      console.log(objectsDataPurchase);
+      this.saveTransactionsPurchases(objectsDataPurchase);
+    },
 
-      CryptoService.PostSaveCryptoPurchase(objectsDataPurchase) // Creo la solicitud POST para mandar el obejto a RestDB
-        .then(() => {
-          alert('Purchase completed successfully!');
-          this.resetPurchaseForm(); // Resetea el formulario después de la compra
-        })
-        .catch((error) => {
-          console.error('Error during purchase:', error);
-          alert('There was an error processing your purchase.');
-        });
+    // GUARDAR LOS DATOS DE LAS COMPRAS EN LA API DE BBDD
+    async saveTransactionsPurchases(objectsDataPurchase) {
+      try {
+        await CryptoService.PostSaveCryptoPurchase(objectsDataPurchase);
+        alert('Purchase completed successfully!');
+      } catch (error) {
+        console.error('Error during purchase:', error);
+        alert('There was an error processing your purchase.');
+      } finally {
+        this.resetBuyFields(); // Resetea el formulario después de la compra
+        this.resetSellFields();
+      }
+      console.log('LO COMPRA REALIZADA: ', objectsDataPurchase);
     },
-    // FUNCION PARA RESETEAR LOS VALORES
-    resetPurchaseForm() {
-      this.selectedBuyCrypto = '';
-      this.quantityBuy = '';
-      this.selectedExchangeBuyCrypto = '';
-      this.buyPrice = null;
-      this.selectedSellCrypto = '';
-      this.quantitySell = '';
-      this.selectedExchangeSellCrypto = '';
-      this.sellPrice = null;
-    },
+
     // FUNCIÓN QUE VALIDA LOS DATOS DE VENTA; SI SON CORRECTOS, LOS ENVÍA A RESTDB, DE LO CONTRARIO, MUESTRA UN ERROR.
-    makeSale() {
-      if (!this.validation('sale')) return; // Si esto es falso, es porque no paso las validaciones
+    async makeSale() {
+      if (!this.validation('sale')) {
+        this.resetBuyFields();
+        this.errorMessageBuy = '';
+        this.resetSellFields();
+        return;
+      }
+      // Si esto es falso, es porque no paso las validaciones
 
       if (this.sellPrice <= 0) {
         this.errorMessageSell = 'The sale price must be greater than 0.';
+        this.resetSellFields();
         return;
       }
-      // Obtengo los datos de los movimientos del usuario
-      CryptoService.savedPurchase(this.password)
-        .then((response) => {
-          this.resultado = response.data;
-          console.log(this.resultado);
-          this.operationSale();
-        }).catch((error) => {
-          console.error('Error al obtener las compras guardadas:', error);
-          alert('Error retrieving saved purchases.');
-        });
+
+      const hasData = await this.getUserTransactionData();
+
+      if (!hasData) {
+        return;
+      }
+
+      this.operationSale();
+
+      console.log('LO QUE TRAE DE LA COMPRA DEL USUARIO: ', this.userTransactionResults);
     },
-    // Funcion para separar la logica de la venta, su es purchase suma, sino resta y registro la venta. REPASAR
-    operationSale() {
+
+    // FUNCION PARA SEPARAR LA LOGICA DE LA VENTA. SI ES PURCHASE SUMA LA CANTIDAD DE MONEDAS, SINO LA RESTA Y SE REGISTRA LA VENTA
+    async operationSale() {
       let quantityOfCoins = 0;
-      this.resultado.forEach((element) => {
-        if (this.selectedSellCrypto === element.crypto_code && element.action === 'purchase') {
-          quantityOfCoins += element.crypto_amount; // Si es es compra, suma
-        } else if (this.selectedSellCrypto === element.crypto_code && element.action === 'sale') {
-          quantityOfCoins -= element.crypto_amount;
+      this.userTransactionResults.forEach((transactionData) => {
+        if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'purchase') {
+          quantityOfCoins += transactionData.crypto_amount; // Si es es compra, suma
+        } else if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'sale') {
+          quantityOfCoins -= transactionData.crypto_amount;
         }
       });
 
       if (quantityOfCoins === 0) {
-        this.errorMessageSell = 'No cuenta con ese tipo de moneda para vender.';
+        this.errorMessageSell = "You don't have that type of currency available for sale.";
         console.log('No cuenta con ese tipo de moneda para vender.');
+        this.resetSellFields();
         return;
       }
 
       if (this.quantitySell > quantityOfCoins) {
-        this.errorMessageSell = 'No cuenta con esa cantidad de monedas para vender.';
+        this.errorMessageSell = "You don't have that amount of coins available for sale.";
         console.log('No cuenta con esa cantidad de monedas para vender.');
+        this.resetSellFields();
         return;
       }
 
-      this.fetchPrice(); // Por si el precio llega a variar.
+      await this.fetchPrice(); // Por si el precio llega a variar.
 
       const objectsDataSale = {
         user_id: this.password,
@@ -292,44 +312,85 @@ export default {
         money: this.sellPrice,
         datetime: this.getDateandTime(),
       };
-      console.log('Cantidad de monedas disponibles: ', quantityOfCoins);
-      console.log(objectsDataSale);
 
-      CryptoService.PostSaveCryptoSale(objectsDataSale)
-        .then(() => {
-          alert('Sale completed successfully!');
-          this.resetPurchaseForm();
-        })
-        .catch((error) => {
-          console.error('Error during purchase:', error);
-          alert('There was an error processing your sale.');
-        });
+      this.saveSalesTransactions(objectsDataSale);
     },
+
+    // GUARDAR LOS DATOS DE LAS COMPRAS
+    async saveSalesTransactions(objectsDataSale) {
+      try {
+        await CryptoService.PostSaveCryptoSale(objectsDataSale);
+        alert('Sale completed successfully!');
+      } catch (error) {
+        console.error('Error during purchase:', error);
+        alert('There was an error processing your sale.');
+      } finally {
+        this.resetSellFields();
+      }
+
+      console.log('LO QUE GUARDA DE LA VENTA: ', objectsDataSale);
+    },
+
     // FUNCION PARA OBTENER LA HORA EN EL FORMATO SOLICITADO
     getDateandTime() {
       const now = new Date();
-      const day = String(now.getDate()).padStart(2, '0');
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-
-      return `${day}-${month}-${year} ${hours}:${minutes}`;
+      const options = {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+      };
+      return `${now.toLocaleString('sv-SE', options).replace(' ', 'T')}Z`; // Formato: YYYY-MM-DDTHH:mm:ssZ
     },
-  },
-  computed: {
-    ...mapGetters(['password']),
 
-    // PARA MOSTRAR EL MENSAJE DE LA COMPRA
-    priceMessage() {
-      if (this.selectedExchangeBuyCrypto !== null && this.selectedBuyCrypto !== null && this.quantityBuy !== null && this.buyPrice !== null) {
-        return `${this.quantityBuy} ${this.selectedBuyCrypto} AT ${this.selectedExchangeBuyCrypto} = ARS ${this.buyPrice}`;
+    generatePriceMessage(quantity, crypto, exchange, type) {
+      if (type === 'purchase') {
+        this.resetSellFields();
+        if (quantity !== null && crypto !== null && exchange !== null && this.purchasePrice !== null) {
+          return `${quantity} ${crypto} AT ${exchange} = ARS ${this.purchasePrice}`;
+        }
       }
-      if (this.selectedExchangeSellCrypto !== null && this.selectedSellCrypto !== null && this.quantitySell !== null && this.sellPrice !== null) {
-        return `${this.quantitySell} ${this.selectedSellCrypto} AT ${this.selectedExchangeSellCrypto} = ARS ${this.sellPrice}`;
+
+      if (type === 'sale') {
+        this.resetBuyFields();
+        if (quantity !== null && crypto !== null && exchange !== null && this.sellPrice !== null) {
+          return `${quantity} ${crypto} AT ${exchange} = ARS ${this.sellPrice}`;
+        }
+      }
+
+      return 'Invalid input or price not available.';
+    },
+    ...mapActions('userTransactionData', ['getUserTransactionData']),
+    ...mapActions('getPricesApi', ['fetchCryptoPrice']),
+  },
+
+  /* FALTA CONTROLAR LA HORA EN LAS VENTAS. IMPLEMENTAR LOS MENSAJES DE GTPRICESAPI !!!!!!!!!!!!!!!!!!! */
+
+  computed: {
+    ...mapGetters({
+      password: 'password',
+      userTransactionResults: 'userTransactionData/userTransactionResults',
+      purchasePrice: 'getPricesApi/purchasePrice',
+      sellPrice: 'getPricesApi/sellPrice',
+      saleErrorMessage: 'getPricesApi/saleErrorMessage',
+      buyErrorMessage: 'getPricesApi/buyErrorMessage',
+    }),
+
+    // PARA MOSTRAR EL MENSAJE DE LA COMPRA DIRECTAMENTE EN EL TEMPLATE
+
+    priceMessageBuy() {
+      this.resetSellFields();
+      if (this.selectedExchangeBuyCrypto && this.selectedBuyCrypto && this.quantityBuy > 0) {
+        return `${this.quantityBuy} ${this.selectedBuyCrypto} = ${this.purchasePrice}`;
       }
       return '';
     },
+
+    priceMessageSell() {
+      this.resetBuyFields();
+      if (this.selectedExchangeSellCrypto && this.selectedSellCrypto && this.quantitySell > 0) {
+        return `${this.quantitySell} ${this.selectedSellCrypto} = ${this.sellPrice}`;
+      }
+      return '';
+    },
+
   },
 };
 </script>
@@ -337,7 +398,7 @@ export default {
 <style scoped>
 
 .error-messages {
-  white-space: pre-line; /* Mantiene los saltos de línea */
-  color: red; /* Opcional, para resaltar los mensajes de error */
+white-space: pre-line; /* Mantiene los saltos de línea */
+color: red; /* Opcional, para resaltar los mensajes de error */
 }
 </style>

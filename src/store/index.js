@@ -1,4 +1,6 @@
 import { createStore } from 'vuex';
+import userTransactionData from './userTransactionData';
+import getPricesApi from './getPricesApi';
 
 export default createStore({
 
@@ -21,6 +23,7 @@ export default createStore({
       state.password = password;
     },
   },
+
   actions: {
     updatePassword({ commit }, password) {
       commit('setPassword', password); // Se utiliza commit para llamar a una mutación y se le pasa el dato a editar en el estado.
@@ -29,6 +32,8 @@ export default createStore({
 
   // Para organizar de una mejor forma si quiero manejar varios estados. Permiten dividir el store en módulos más pequeños
   modules: {
+    userTransactionData,
+    getPricesApi,
   },
 });
 

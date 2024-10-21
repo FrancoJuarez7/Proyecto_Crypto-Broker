@@ -5,14 +5,16 @@ const apiClient1 = axios.create({
 });
 
 const apiClient2 = axios.create({
-  baseURL: 'https://laboratorio3-f36a.restdb.io/rest',
-  headers: { 'x-apikey': '60eb09146661365596af552f' },
+  baseURL: 'https://laboratorio3-5459.restdb.io/rest/',
+  headers: { 'x-apikey': '64a57c2b86d8c50fe6ed8fa5' },
 });
 
 // Exportando los servicios
 export default {
-  getPrice(exchange, coin, volumen) {
-    return apiClient1.get(`/${exchange}/${coin}/ARS/${volumen}`);
+
+  getPrice(coin, exchange) {
+    const exchangeNow = exchange || 'letsbit';
+    return apiClient1.get(`/${exchangeNow}/${coin}/ARS/${0.1}`);
   },
 
   /* Esta llamada va a ser para obtener todos los precios de todas las criptos, que las voy a mostrar en los carteles en una pagina
@@ -23,7 +25,9 @@ export default {
   } */
 
   PostSaveCryptoPurchase(objectsDataPurchase) {
-    return apiClient2.post('/transactions', objectsDataPurchase);
+    // Crear una copia del objeto original
+    const purchaseData = { ...objectsDataPurchase, datetime: new Date().toISOString() };
+    return apiClient2.post('/transactions', purchaseData);
   },
 
   PostSaveCryptoSale(objectsDataSale) {

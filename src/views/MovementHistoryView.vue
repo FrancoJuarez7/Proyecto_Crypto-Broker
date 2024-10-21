@@ -1,22 +1,33 @@
 <template>
   <div class="container">
+
     <NavigationBar></NavigationBar>
-    <div v-if="transactions.length === 0"> Obtaining historical movements ...</div>
-    <div v-else><CryptoDataTable :columnasProp="columnas" :filasProps="filas" :actionsButton="actions" @deletedRow="removeRow"
-    @editRow="updateRow"> </CryptoDataTable></div>
 
-      <!-- Muestra el mensaje de error si existe -->
-      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <div v-if= "isLoading"> Obtaining historical movements ...</div>
+    <div v-else-if="userTransactionResults && userTransactionResults.length > 0">
+      <CryptoDataTable
+        :columnasProp="columnas"
+        :filasProps="filas"
+        :actionsButton="actions"
+        @deletedRow="removeRow"
+        @editRow="updateRow">
+      </CryptoDataTable>
+    </div>
+    <div v-else-if="!hasData">
+      <p>THE DATA SAVED IN THE API COULD NOT BE ACCESSED</p>
+    </div>
+    <div v-else>
+      <p>NO TRANSACTION DATA TO DISPLAY</p>
+    </div>
 
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script>
-
 import CryptoDataTable from '@/components/CryptoDataTable.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
-import CryptoService from '@/services/CryptoService';
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'MovementHistoryView',
@@ -24,108 +35,110 @@ export default {
     NavigationBar,
     CryptoDataTable,
   },
-  created() {
-    this.getUserTransactions();
+  async created() {
+    const hasData = await this.getUserTransactionData(); // TRAE EL EL ARRAY DE OBJETOS CON LAS TRANSACCIONES DEL USUARIO
+    if (!hasData) {
+      this.hasData = false;
+      this.isLoading = false;
+      return;
+    }
+    this.hasData = true;
+    this.getRowsAndColumns();
+    this.isLoading = false;
   },
   data() {
     return {
-      columnasMap: {
-        _id: 'USUARIO',
-        action: 'TRANSACTION',
-        crypto_code: 'CURRENCY',
-        crypto_amount: 'AMOUNT',
-        money: 'MONEY (ARS)',
-        datetime: 'TRANSACTION TIME',
-      },
       columnas: [],
       filas: [],
-      transactions: [],
       errorMessage: '',
-      visibleColumn: ['_id', 'action', 'crypto_code', 'crypto_amount', 'money', 'datetime'], // Claves a mostaar en orden
       actions: true,
+      isLoading: true,
+      hasData: false,
     };
   },
   methods: {
-    getUserTransactions() {
-      try {
-        CryptoService.savedPurchase(this.password)
-          .then((response) => {
-            this.transactions = response.data;
-            console.log(this.transactions);
-            this.errorMessage = '';
-            this.getRowsAndColumns();
-          });
-      } catch (error) {
-        this.errorMessage = `No se pudieron obtener las transacciones: ${error.message}`;
-        console.log(this.errorMessage);// MEJORAR ESTO POR SI HUBO ERROR MOSTRARSELO AL USUARIO EN EL TEMPLATE
-      }
-    },
+    ...mapActions('userTransactionData', ['getUserTransactionData']),
+
     getRowsAndColumns() {
-      if (this.transactions.length === 0) {
+      if (this.userTransactionResults.length === 0) {
         return;
       }
 
-      // Cada clave de visibleColumn, se mapea con la clave de cada columnasMap para que sea mas legible y se guarda en columnas.
-      this.columnas = this.visibleColumn.map((key) => this.columnasMap[key] || key);
+      // Asignar las columnas como un array de nombres
+      this.columnas = [
+        'USUARIO',
+        'TRANSACTION',
+        'CURRENCY',
+        'AMOUNT',
+        'MONEY (ARS)',
+        'TRANSACTION TIME',
+      ];
 
-      // Mapea las transacciones a filas
-      this.filas = this.transactions.map((transaction) => this.visibleColumn.map((key) => (key === 'datetime'
-        ? this.formatDatetime(transaction[key]) : transaction[key])));
+      // Mapea las transacciones a filas usando this.columnas
+      this.filas = this.userTransactionResults.map((transaction) => [
+        transaction._id, // Asegúrate de que estos nombres coincidan con tus datos
+        transaction.action,
+        transaction.crypto_code,
+        transaction.crypto_amount,
+        transaction.money,
+        this.formatDatetime(transaction.datetime),
+      ]);
     },
+
     formatDatetime(datetime) {
+      // Verifica si el datetime está definido o es un valor válido
+      if (!datetime) {
+        console.error('El datetime no está definido o es nulo:', datetime);
+        return 'Fecha inválida';
+      }
+
+      // Asegúrate de que el objeto Date interprete la fecha como UTC
       const date = new Date(datetime);
+
+      // Establece las opciones de formateo para la fecha y la hora según la zona horaria local
       const optionsDate = {
-        timeZone: 'UTC',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
       };
       const optionsTime = {
-        timeZone: 'UTC',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false, // Formato de 24 horas
       };
 
-      // Obtén las partes de fecha y hora por separado
+      // Usa toLocaleDateString y toLocaleTimeString sin la opción timeZone para la hora local
       const formattedDate = date.toLocaleDateString('es-AR', optionsDate);
       const formattedTime = date.toLocaleTimeString('es-AR', optionsTime);
 
       // Devuelve en el formato correcto: hora primero, luego fecha
       return `${formattedTime}, ${formattedDate}`;
     },
-    // Cada indice es una fila, debe ser >= 0 y < la cantidad total de filas para garantizar que se elimina una fila válida.
     removeRow(rowIndex) {
       console.log('Removing row at index:', rowIndex);
       if (rowIndex >= 0 && rowIndex < this.filas.length) {
         this.filas.splice(rowIndex, 1);
-        /* Esto elimina un valor de la variable filas esto al estar declarado en el data() de VUE, y debido a la reactivida, las filas se
-       actualizará automáticamente en la vista del componente CryptoDataTable. Como this.filas está vinculado al componente a través de las
-       props (:filasProps="filas"), cualquier cambio en this.filas se reflejará automáticamente en la vista. Esto también aplica cuando los
-       datos se pasan al componente usando getRowsAndColumns() que tambien utiliza la variable filas. La reactividad en Vue asegura que las
-       actualizaciones en this.filas se muestren en el componente sin necesidad de actualizaciones manuales. */
       } else {
         console.error('Invalid rowIndex:', rowIndex);
       }
     },
     updateRow(idTransaction, updateTransaction) {
-      /* Recorre las filas y busca la primer coincidencia de la fila [CERO] que sea igual al idTransaction. Cuando lo encuentra deja de
-      recorrer. */
       const rowIndex = this.filas.findIndex((row) => row[0] === idTransaction);
-
-      // -1 es el resultado que devuelve el metodo si no encuentra nada. Pero si encuentra edito [FILA] [COLUMNA]
       if (rowIndex !== -1) {
+        this.filas[rowIndex][1] = updateTransaction.action;
+        this.filas[rowIndex][2] = updateTransaction.crypto_code;
         this.filas[rowIndex][3] = updateTransaction.crypto_amount;
         this.filas[rowIndex][4] = updateTransaction.money;
+        this.filas[rowIndex][5] = this.formatDatetime(updateTransaction.datetime);
       }
     },
   },
   computed: {
     ...mapGetters(['password']),
+    ...mapGetters('userTransactionData', ['userTransactionResults']),
   },
 };
 </script>
 
 <style scoped>
-
 </style>
