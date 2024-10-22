@@ -14,7 +14,7 @@
       </thead>
       <tbody>
         <tr v-for="(row, rowIndex) in filteredRows" :key="rowIndex">
-          <td v-for="(value, colIndex) in row" :key="colIndex">
+          <td v-for="(value, colIndex) in (Array.isArray(row) ? row : Object.values(row))" :key="colIndex">
             {{ value }}
           </td>
           <td v-if="actionsButton">
@@ -370,8 +370,17 @@ export default {
         return [];
       }
 
-      return this.filasProps.map((row) => row.filter((_, index) => this.columnasProp[index] !== 'USUARIO'));
-    },
+      return this.filasProps.map((row) => {
+        // Verifica si 'row' es un array antes de aplicar .filter()
+        if (Array.isArray(row)) {
+          console.log('FILAS: ', row);
+          return row.filter((_, index) => this.columnasProp[index] !== 'USUARIO');
+        }
+        // Si no es un array, devuelve el 'row' tal como está o ajusta según lo que necesites
+        return row;
+      });
+    }
+    ,
   },
 };
 

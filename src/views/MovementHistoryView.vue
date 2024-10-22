@@ -37,6 +37,7 @@ export default {
   },
   async created() {
     const hasData = await this.getUserTransactionData(); // TRAE EL EL ARRAY DE OBJETOS CON LAS TRANSACCIONES DEL USUARIO
+
     if (!hasData) {
       this.hasData = false;
       this.isLoading = false;

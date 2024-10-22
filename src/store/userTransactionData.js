@@ -37,7 +37,7 @@ export default {
       try {
         const response = await CryptoService.savedPurchase(password);
 
-        if (response.data) {
+        if (response.data || response.data > 0) {
           commit('getTransactions', response.data);
           console.log('SE ENCONTRARON DATOS:', response.data);
           return true; // Devuelve true si hay datos

@@ -111,8 +111,6 @@ export default {
             type: 'purchase',
           });
 
-          console.log(this.purchasePrice);
-
           if (this.purchasePrice === null || Number.isNaN(this.purchasePrice)) {
             console.log('ENTRO ACA COMPRA:', this.buyErrorMessage);
             this.resetBuyFields();
