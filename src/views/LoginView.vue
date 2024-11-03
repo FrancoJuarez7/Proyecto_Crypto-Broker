@@ -5,8 +5,6 @@
 
     <LoginForm></LoginForm>
 
-      <!-- Aquí van los CARTELES CON LOS PRECIOS QUE SE DEBERIAN ACTUALIZAR CADA CIERTO TIEMPO -->
-
   </div>
 </template>
 

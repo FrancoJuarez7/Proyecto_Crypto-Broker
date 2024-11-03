@@ -1,6 +1,7 @@
 import { createStore } from 'vuex';
 import userTransactionData from './userTransactionData';
 import getPricesApi from './getPricesApi';
+import exchangesAndCurrencies from './exchangesAndCurrencies';
 
 export default createStore({
 
@@ -34,6 +35,7 @@ export default createStore({
   modules: {
     userTransactionData,
     getPricesApi,
+    exchangesAndCurrencies,
   },
 });
 

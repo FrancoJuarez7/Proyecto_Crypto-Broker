@@ -28,13 +28,13 @@ export default {
   methods: { // Methods: acciones que quiero realizar
     ...mapActions(['updatePassword']), // Función de Vuex que permite mapear acciones como métodos de tu componente Vue.
     submitForm() {
-      const { password } = this;
+      const { password } = this; // Es lo mismo que hacer const password  = this.password;
       const isValidLength = password.length === 8;
       const hasLetter = /[a-zA-Z]/.test(password);
       const hasNumber = /[0-9]/.test(password);
 
       if (!isValidLength || !hasLetter || !hasNumber) {
-        this.errorMessage = 'The password must be 8 characters and alphanumeric.';
+        this.errorMessage = '* The password must be 8 characters and alphanumeric.';
       } else {
         this.updatePassword(this.password);
         this.errorMessage = '';

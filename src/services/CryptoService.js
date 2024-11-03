@@ -5,8 +5,8 @@ const apiClient1 = axios.create({
 });
 
 const apiClient2 = axios.create({
-  baseURL: 'https://laboratorio3-f36a.restdb.io/rest/',
-  headers: { 'x-apikey': '60eb09146661365596af552f' },
+  baseURL: 'https://labor3-d60e.restdb.io/rest/',
+  headers: { 'x-apikey': '64a2e9bc86d8c525a3ed8f63' },
 });
 
 // Exportando los servicios
@@ -16,13 +16,6 @@ export default {
     const exchangeNow = exchange || 'letsbit';
     return apiClient1.get(`/${exchangeNow}/${coin}/ARS/${0.1}`);
   },
-
-  /* Esta llamada va a ser para obtener todos los precios de todas las criptos, que las voy a mostrar en los carteles en una pagina
-  principal, habia pensaod con el array de todos los nombres, trabajarlo por ese lado para pasarle los nombres, comparar los precios mas
-  bajos para la compra y mas altos para la venta y mostrar
-  fetchSamplePricesForUsers(exchange, coin) {
-    return apiClient1.get(`/${exchange}/${coin}/ARS/${1}`);
-  } */
 
   PostSaveCryptoPurchase(objectsDataPurchase) {
     // Crear una copia del objeto original
@@ -34,10 +27,9 @@ export default {
     return apiClient2.post('/transactions', objectsDataSale);
   },
 
-  // Puedes descomentar este método si lo necesitas en el futuro
   savedPurchase(userId) {
     const queryString = `?q={"user_id": "${userId}"}`;
-    return apiClient2.get(`/transactions${queryString}`);
+    return apiClient2.get(`/transacons${queryString}`);
   },
 
   editTransaction(idTransaction, updateTransaction) {

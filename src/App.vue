@@ -3,6 +3,12 @@
 </template>
 
 <style>
+
+body {
+    margin: 0;
+    overflow: hidden; /* Oculta cualquier desbordamiento */
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

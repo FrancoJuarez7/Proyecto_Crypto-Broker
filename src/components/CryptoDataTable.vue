@@ -22,8 +22,8 @@
             <button @click="viewTransaction(rowIndex)" @keydown.enter="viewTransaction(rowIndex)"
             @keydown.space="viewTransaction(rowIndex)" tabindex="0"> VIEW </button>
 
-            <button @click="modifyTransaction(rowIndex)" @keydown.enter="modifyTransaction(rowIndex)"
-            @keydown.space="modifyTransaction(rowIndex)" tabindex="0">EDIT</button>
+            <button @click="loadEditForm(rowIndex)" @keydown.enter="loadEditForm(rowIndex)"
+            @keydown.space="loadEditForm(rowIndex)" tabindex="0">EDIT</button>
 
             <button @click="deleteTransaction(rowIndex)" @keydown.enter="deleteTransaction(rowIndex)"
               @keydown.space="deleteTransaction(rowIndex)" tabindex="0"> DELETE</button>
@@ -51,14 +51,14 @@
           <label for="sellExchangeCrypto">SELECT THE EXCHANGE         </label>
               <select id="sellExchangeCrypto" v-model="selectedExchangeCrypto">
                 <option value="" disabled selected>CHOOSE THE EXCHANGE</option>
-                <option v-for="(nameExchange, index) in Exchanges" :key="index" :value="nameExchange">
+                <option v-for="(nameExchange, index) in getExchanges" :key="index" :value="nameExchange">
                   {{ nameExchange }}
                 </option>
               </select><br> <br>
 
           <label for="saleCrypo">SELECT THE CRYPTO       </label>
            <select id="saleCrypto" v-model="selectedCrypto">
-              <option v-for="(nameCoins, index) in typesOfCoins" :key="index" :value="nameCoins">
+              <option v-for="(nameCoins, index) in getTypesOfCoins" :key="index" :value="nameCoins">
                 {{ nameCoins }}
               </option>
            </select><br> <br>
@@ -77,6 +77,7 @@
         </div>
       </div>
     </div>
+    <MessagesApp :isVisible="showModalMessage" :message="messagesApp" :showCloseButton="showButton" @close="showModalMessage = false"> </MessagesApp>
   </div>
 </template>
 
@@ -84,8 +85,12 @@
 
 import CryptoService from '@/services/CryptoService';
 import { mapGetters, mapActions } from 'vuex';
+import MessagesApp from './MessagesApp.vue';
 
 export default {
+  components: {
+    MessagesApp,
+  },
   props: {
     columnasProp: {
       type: Array,
@@ -102,22 +107,19 @@ export default {
   },
   data() {
     return {
+      showButton: false,
+      messagesApp: '',
       selectedCrypto: '',
       selectTransaction: '',
       selectedExchangeCrypto: '',
       Amount: 0,
       Price: 0,
       selectedRow: null,
+      showModalMessage: false,
       showModal: false, // Controla la visibilidad del modal
       modalView: false,
       modalEdit: false,
       idTransaction: null,
-      typesOfCoins: ['BTC', 'ETH', 'USDT', 'USDC', 'DAI', 'UXD', 'USDP', 'WLD', 'BNB', 'SOL', 'XRP', 'ADA', 'AVAX', 'DOGE', 'TRX', 'LINK', 'DOT', 'MATIC',
-        'SHIB', 'LTC', 'BHC', 'EOS', 'XLM', 'FTM', 'AAVE', 'UNI', 'ALGO', 'BAT', 'PAXG', 'CAKE', 'AXS', 'SLP', 'MANA', 'SAND', 'CHZ'],
-      Exchanges: ['LETSBIT', 'BITSOALPHA', 'CRYPTOMKT', 'BITGETP2P', 'BUENBIT', 'ELUTER', 'ELDORADOP2P', 'RIPIO', 'BITSO', 'PAXFULP2P', 'FIWIND', 'BINANCEP2P',
-        'SATOSHITANGO', 'KRIPTONMARKET', 'ARGENBTC', 'OKEXP2P', 'TIENDACRYPTO', 'LEMONCASH', 'COCOSCRYPTO', 'BYBIT', 'BINANCE', 'PAYDECEP2P', 'TRUBIT',
-        'KUCOINP2P', 'RIPIOEXCHANGE', 'VIBRANT', 'PLUSCRYPTO', 'BYBITP2P', 'CRYPTOMKTPRO', 'BELO', 'CALYPSO', 'BITMONEDERO', 'COINEXP2P', 'DECRYPTO', 'SALDO',
-        'HUOBIP2P', 'LEMONCASHP2P', 'BINGXP2P', 'TRUBITP2P', 'LNP2PBOTP2P', 'SYKLOP2P', 'XAPO'],
       resultado: 0,
       exchangeSelected: '',
     };
@@ -140,19 +142,27 @@ export default {
     deleteTransaction(rowIndex) {
       const transactionId = this.filasProps[rowIndex][0]; // Asegúrate de que esto sea correcto
       console.log('Transaction ID:', transactionId);
-
       console.log('Deleting transaction at index:', rowIndex);
+
+      this.setModalMessage('Deleting transaction...', false);
+
       CryptoService.deleteTransaction(this.filasProps[rowIndex][0]) // Primero: elimino la fila.
         .then(() => {
-          alert('Transaction deleted');
           this.$emit('deletedRow', rowIndex); /* Segundo: emito un evento para actualizarlo en la tabla porque como tengo que eliminar algo
           que se guarda en filasProps que es una props y no puedo modificarla desde un componente hijo . Le debo pasar el indice de la fila a
           eliminar. IR A ESTE METODO EN EL PADRE */
+
+          this.setModalMessage('Transaction deleted successfully.', true);
         })
         .catch((error) => {
           console.error(error);
-          alert('Error deleting transaction');
+          this.setModalMessage('Error deleting transaction', true);
         });
+    },
+    setModalMessage(message, showButton) {
+      this.showModalMessage = true;
+      this.showButton = showButton;
+      this.messagesApp = message;
     },
     closeModal() {
       this.showModal = false; // Oculta el modal
@@ -160,7 +170,7 @@ export default {
 
     // - - - - - - - - - - - - - - - > ESTO PARA LA EDICION
 
-    async modifyTransaction(rowIndex) {
+    async loadEditForm(rowIndex) { // ABRE EL FORMULARIO
       this.showModal = true;
       this.modalView = false;
 
@@ -171,22 +181,21 @@ export default {
       this.modalEdit = true;
       this.resetModalValues();
 
-      const hasData = await this.getUserTransactionData(); // TRAE EL EL ARRAY DE OBJETOS CON LAS TRANSACCIONES DEL USUARIO
+      this.setModalMessage('Filling out the form data.', false);
+      await this.getUserTransactionData(); // TRAE EL EL ARRAY DE OBJETOS CON LAS TRANSACCIONES DEL USUARIO
+      this.showModalMessage = false;
 
-      if (!hasData) {
-        return;
-      }
-      this.editTransaction();
+      this.formCompletion();
     },
 
-    async editTransaction() {
+    async formCompletion() {
       // Recorre las transacciones del usuario y la compara con el id de la columna que guarda el ID de la transaccion del usuaio
       const dataUser = this.userTransactionResults.find((user) => user._id === this.idTransaction);
 
       // Si coinciden, los datos que obtengo del objeto de las transacciones, se los asigno al modal:
       if (dataUser) {
         this.selectedCrypto = dataUser.crypto_code; // MONEDA
-        this.selectTransaction = dataUser.action; // ACCION: PURCHASE O SALE
+        this.selectTransaction = (dataUser.action).toLowerCase(); // ACCION: PURCHASE O SALE
         this.Amount = parseFloat(dataUser.crypto_amount); // CANTIDAD DE MONEDA
 
         if (this.isValidForm()) {
@@ -210,22 +219,24 @@ export default {
           // debugger en chrome que es cuando mas tarda en cargar donde puedo probar esto;
           console.log(this.selectedExchangeCrypto, selectedCrypto, Amount, selectTransaction);
 
-          await this.fetchCryptoPrice({
-            exchange: this.selectedExchangeCrypto,
-            crypto: selectedCrypto,
-            quantity: Amount,
-            type: selectTransaction,
-          });
+          this.setModalMessage('Calculating price...', false);
 
-          if ((this.purchasePrice === null || Number.isNaN(this.purchasePrice)) && this.selectTransaction === 'purchase') {
-            console.log('ENTRO ACA COMPRA:', this.buyErrorMessage);
-            return;
-          } if ((this.sellPrice === null || Number.isNaN(this.sellPrice)) && this.selectTransaction === 'sale') {
-            console.log('ENTRO ACA VENTA: ', this.saleErrorMessage);
-            return;
+          if (!await this.fetchCryptoPrice({
+            exchange: this.selectedExchangeCrypto, crypto: selectedCrypto, quantity: Amount, type: selectTransaction,
+          })) {
+            const isPurchase = selectTransaction === 'purchase';
+            const isInvalidPrice = Number.isNaN(isPurchase ? this.purchasePrice : this.sellPrice);
+
+            if (isInvalidPrice || (isPurchase ? !this.purchasePrice : !this.sellPrice)) {
+              this.showModalMessage = true;
+              this.showButton = true;
+              this.messagesApp = isPurchase ? this.buyErrorMessage : this.saleErrorMessage;
+              this.resetModalValues();
+              return;
+            }
+            this.showModalMessage = false;
+            this.Price = isPurchase ? this.purchasePrice : this.sellPrice;
           }
-
-          this.Price = this.selectTransaction === 'purchase' ? this.purchasePrice : this.sellPrice;
         }
       } catch (error) {
         console.log(error);
@@ -234,21 +245,41 @@ export default {
 
     async updateTransaction() {
       if (!this.isValidForm()) {
-        console.log('LOS DATOS ESTAN INCOMPLETOS');
+        this.setModalMessage('Check that the data is incomplete.', true);
         this.resetModalValues();
         return;
       }
 
-      let totalCoins = 0;
+      if ((this.selectTransaction).toLocaleLowerCase() === 'purchase') { // PURCHASE: SI ESTO ES IGUAL, COMPRO. LISTO
+        await this.handlingEditedData();
+      } else { // SALE: ESTO ES SOLAMENTE PARA SABER SI PUEDE VENDER
+        let totalCoins = 0;
 
-      this.userTransactionResults.forEach((transactionData) => {
-        if (this.selectedCrypto === transactionData.crypto_code && transactionData.action === 'purchase') {
-          totalCoins += transactionData.crypto_amount;
-        } else if (this.selectedCrypto === transactionData.crypto_code && transactionData.action === 'sale') {
-          totalCoins -= transactionData.crypto_amount;
+        this.userTransactionResults.forEach((transactionData) => {
+          if (this.selectedCrypto === transactionData.crypto_code) {
+            totalCoins += transactionData.crypto_amount; // Si es igual, suma para ver si tengo esa moneda a vender
+          }
+        });
+
+        if (totalCoins === 0) {
+          this.setModalMessage('Does not have that type of currency available for sale.', true);
+          console.log('No cuenta con esa tipo de moneda para vender');
+          this.resetModalValues();
+          return;
         }
-      });
 
+        if (this.Amount > totalCoins) {
+          this.setModalMessage('Does not have that amount of currency available for sale.', true);
+          console.log('No cuenta con esa cantidad de moneda para vender');
+          this.resetModalValues();
+          return;
+        }
+
+        await this.handlingEditedData();
+      }
+    },
+
+    async handlingEditedData() {
       const updateTransaction = {
         action: this.selectTransaction,
         crypto_code: this.selectedCrypto,
@@ -257,33 +288,18 @@ export default {
         datetime: this.getDateandTime(),
       };
 
-      if (totalCoins === 0) {
-        console.log('No cuenta con ese tipo de moneda para vender');
-        this.resetModalValues();
-        return;
-      }
-      if (this.Amount > totalCoins) {
-        console.log('No cuenta con esa cantidad de moneda para vender');
-        this.resetModalValues();
-        return;
-      }
-
+      this.setModalMessage('Editing transaction...', false);
       try {
         await CryptoService.editTransaction(this.idTransaction, updateTransaction);
-        alert('Transaction edited successfully');
         this.$emit('editRow', this.idTransaction, updateTransaction); // Emito un evento para editar la fila
+        this.setModalMessage('Edit completed successfully.', true);
         this.resetModalValues();
       } catch (error) {
         console.error('Error editing transaction:', error);
-        alert('Error editing transaction');
+        this.setModalMessage('Error editing transaction.', true);
       } finally {
-        this.newAmount = '';
-        this.newPrice = '';
         this.closeModal();
       }
-
-      console.log('TOTAL MONEDAS: ', totalCoins);
-      console.log('OBJETO FINAL: ', this.userTransactionResults);
     },
 
     // - - - - - - - - - - - - - - - > FINALIZA LA EDICION
@@ -314,9 +330,12 @@ export default {
         && this.Amount >= 0
       );
     },
-
-    ...mapActions('userTransactionData', ['getUserTransactionData']),
-    ...mapActions('getPricesApi', ['fetchCryptoPrice']),
+    ...mapActions({
+      getUserTransactionData: 'userTransactionData/getUserTransactionData',
+      fetchCryptoPrice: 'getPricesApi/fetchCryptoPrice',
+      initializeExchanges: 'exchangesAndCurrencies/initializeExchanges',
+      initializeTypesOfCoins: 'exchangesAndCurrencies/initializeTypesOfCoins',
+    }),
   },
   watch: {
     async selectedCrypto() {
@@ -341,12 +360,17 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['password']),
-    ...mapGetters('userTransactionData', ['userTransactionResults']),
-    ...mapGetters('getPricesApi', ['purchasePrice']),
-    ...mapGetters('getPricesApi', ['sellPrice']),
-    ...mapGetters('getPricesApi', ['buyErrorMessage']),
-    ...mapGetters('getPricesApi', ['saleErrorMessage']),
+
+    ...mapGetters({
+      password: 'password',
+      userTransactionResults: 'userTransactionData/userTransactionResults',
+      purchasePrice: 'getPricesApi/purchasePrice',
+      sellPrice: 'getPricesApi/sellPrice',
+      buyErrorMessage: 'getPricesApi/buyErrorMessage',
+      saleErrorMessage: 'getPricesApi/saleErrorMessage',
+      getExchanges: 'exchangesAndCurrencies/getExchanges',
+      getTypesOfCoins: 'exchangesAndCurrencies/getTypesOfCoins',
+    }),
 
     visibleColumns() {
       if (!this.columnasProp) {
@@ -373,7 +397,6 @@ export default {
       return this.filasProps.map((row) => {
         // Verifica si 'row' es un array antes de aplicar .filter()
         if (Array.isArray(row)) {
-          console.log('FILAS: ', row);
           return row.filter((_, index) => this.columnasProp[index] !== 'USUARIO');
         }
         // Si no es un array, devuelve el 'row' tal como está o ajusta según lo que necesites
@@ -396,6 +419,7 @@ export default {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1001; /* Z-index para el Modal 1 */
 }
 
 .modal-content {

@@ -37,7 +37,7 @@ export default {
       try {
         const response = await CryptoService.savedPurchase(password);
 
-        if (response.data || response.data > 0) {
+        if (response.data?.length >= 0) {
           commit('getTransactions', response.data);
           console.log('SE ENCONTRARON DATOS:', response.data);
           return true; // Devuelve true si hay datos
@@ -46,7 +46,6 @@ export default {
         return false; // Devuelve false si no hay datos
       } catch (error) {
         console.log('Error al intentar acceder a la API: ', error);
-        alert('Error retrieving saved purchases.');
         return false; // Devuelve false en caso de error
       }
     }

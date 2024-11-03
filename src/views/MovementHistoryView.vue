@@ -3,8 +3,7 @@
 
     <NavigationBar></NavigationBar>
 
-    <div v-if= "isLoading"> Obtaining historical movements ...</div>
-    <div v-else-if="userTransactionResults && userTransactionResults.length > 0">
+    <div v-if=" !isLoading && userTransactionResults?.length > 0">
       <CryptoDataTable
         :columnasProp="columnas"
         :filasProps="filas"
@@ -13,20 +12,22 @@
         @editRow="updateRow">
       </CryptoDataTable>
     </div>
-    <div v-else-if="!hasData">
+    <div v-else-if=" !isLoading && !hasData">
       <p>THE DATA SAVED IN THE API COULD NOT BE ACCESSED</p>
     </div>
-    <div v-else>
+    <div v-else-if="!isLoading">
       <p>NO TRANSACTION DATA TO DISPLAY</p>
     </div>
 
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <MessagesApp :isVisible="showModal" :message="messageApp" :showCloseButton="showButton" @close="showModal = false"></MessagesApp>
+
   </div>
 </template>
 
 <script>
 import CryptoDataTable from '@/components/CryptoDataTable.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
+import MessagesApp from '@/components/MessagesApp.vue';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
@@ -34,32 +35,44 @@ export default {
   components: {
     NavigationBar,
     CryptoDataTable,
+    MessagesApp,
   },
   async created() {
-    const hasData = await this.getUserTransactionData(); // TRAE EL EL ARRAY DE OBJETOS CON LAS TRANSACCIONES DEL USUARIO
+    this.setModalMessage('Loading your transaction data, please wait...', false);
 
-    if (!hasData) {
-      this.hasData = false;
-      this.isLoading = false;
-      return;
+    this.hasData = await this.getUserTransactionData();
+    this.isLoading = false; // Sea true o false deja de cargar
+
+    // Verifica si hay datos y actualiza el estado según el resultado
+    if (!this.hasData) {
+      this.setModalMessage('Failed to obtain transaction data. Please refresh the page or try again later.', true);
+    } else if (this.userTransactionResults.length > 0) {
+      this.showModal = false;
+      this.getRowsAndColumns();
+    } else {
+      this.setModalMessage('There are currently no transactions to display.', true);
     }
-    this.hasData = true;
-    this.getRowsAndColumns();
-    this.isLoading = false;
   },
   data() {
     return {
+      showModal: false,
+      showButton: false,
+      isLoading: true, // Esta cargando ?
+      hasData: false, // Tiene datos ?
+      actions: true,
+      messageApp: '',
       columnas: [],
       filas: [],
-      errorMessage: '',
-      actions: true,
-      isLoading: true,
-      hasData: false,
     };
   },
   methods: {
     ...mapActions('userTransactionData', ['getUserTransactionData']),
 
+    setModalMessage(message, showButton) {
+      this.showModal = true;
+      this.showButton = showButton;
+      this.messageApp = message;
+    },
     getRowsAndColumns() {
       if (this.userTransactionResults.length === 0) {
         return;
@@ -85,7 +98,6 @@ export default {
         this.formatDatetime(transaction.datetime),
       ]);
     },
-
     formatDatetime(datetime) {
       // Verifica si el datetime está definido o es un valor válido
       if (!datetime) {
@@ -135,8 +147,10 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['password']),
-    ...mapGetters('userTransactionData', ['userTransactionResults']),
+    ...mapGetters({
+      password: 'password', // Getter del módulo raíz
+      userTransactionResults: 'userTransactionData/userTransactionResults', // Getter del módulo userTransactionData
+    }),
   },
 };
 </script>

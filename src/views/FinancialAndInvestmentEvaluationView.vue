@@ -1,21 +1,32 @@
 <template>
-  <NavigationBar></NavigationBar>
-  <div v-if= "isLoading"> Obtaining financial movements ...</div>
-  <div v-else-if="columnas.length > 0 && filas.length > 0 ">
-    <CryptoDataTable
+  <div>
+    <NavigationBar></NavigationBar>
+    <MessagesApp :isVisible="showModal" :message="messageApp" :showCloseButton="showButton"  @click="showModal = false"></MessagesApp>
+
+     <!-- Mostrar datos si están disponibles -->
+     <div v-if=" !isLoading && columnas.length > 0 && filas.length > 0">
+      <CryptoDataTable
         :columnasProp="columnas"
         :filasProps="filas"
         :actionsButton="actions">
       </CryptoDataTable>
-  </div>
-  <div v-else>
-      <p>NO FINANCIAL DATA TO SHOW</p>
-  </div>
+    </div>
+
+    <div v-else-if=" !isLoading && !hasData">
+      <p>THE DATA SAVED IN THE API COULD NOT BE ACCESSED</p>
+    </div>
+
+    <div v-else-if="!isLoading && this.userTransactionResults.length <= 0">
+      <p>NO TRANSACTION DATA TO DISPLAY</p>
+    </div>
+
+</div>
 </template>
 
 <script>
 import NavigationBar from '@/components/NavigationBar.vue';
 import CryptoDataTable from '@/components/CryptoDataTable.vue';
+import MessagesApp from '@/components/MessagesApp.vue';
 import { mapGetters, mapActions } from 'vuex';
 // import CryptoService from '@/services/CryptoService';
 
@@ -24,23 +35,21 @@ export default {
   components: {
     NavigationBar,
     CryptoDataTable,
+    MessagesApp,
   },
   async created() {
-    try {
-      await this.getRowsAndColumns();
-    } catch (error) {
-      console.log('Failed to load transactions. Please try again later.');
-    } finally {
-      this.isLoading = false;
-    }
+    // CONTINUAR ACA QUE ME MUESTRA <p>NO TRANSACTION DATA TO DISPLAY</p> ANTES DE MOSTRAR LA TABLA
+    await this.getRowsAndColumns(); // Supón que este método carga los datos
   },
   data() {
     return {
+      showModal: false,
+      showButton: false,
       isLoading: true,
-      errorMessage: '',
+      hasData: false,
+      messageApp: '',
       columnas: [],
       filas: [],
-      errorMessageBuy: '',
       arrayTypes: [],
       actions: false,
       totalCoins: 0,
@@ -48,6 +57,11 @@ export default {
     };
   },
   methods: {
+    setModalMessage(message, showButton) {
+      this.showModal = true;
+      this.showButton = showButton;
+      this.messageApp = message;
+    },
 
     // Método para establecer las columnas
     async getRowsAndColumns() {
@@ -61,28 +75,21 @@ export default {
       await this.getTransactions();
     },
 
-    // PASO 1: OBTENER LAS TRANSACCIONES DEL USUARIO. ---> xxx HECHO xxx
-    // PASO 2: RECORRER LAS TRANSACCIONES, SUMANDO Y RESTANTO LAS COMPRAS Y VENTAS DEPENDIENDO SI ES PURCHASE O SALE. NOMBRES UNICOS, SI LA
-    // CANTIDAD DE MONEDAS ES 0, ESA CRYPTO NO DEBE MOSTRARSE.
-    // PASO 3: OBTENER EL PRECIO ACTUAL DE LA MONEDA CON LA QUE ESTOY TRABAJANDO.
-    // PASO 4: MULTIPLICAR LA CANTIDAD DE MONEDAS QUE TENGO CON EL PRECIO ACTUAL PARA SABER CUANTO DINERO TENGO DE ESA MONEDA.
-    // PASO 5: SUMAR EL TOTAL DE TODAS LAS MONEDAS QUE TENGO PARA MOSTRAR EL TOTAL DE DINERO QUE TENGO.
-    // PASO 6: ANALIZAR COMO HACER LA PANTALLA DE INVERSIONES
-
     // Método para obtener transacciones
     async getTransactions() {
-      debugger;
-      const response = await this.getUserTransactionData();
-      if (!response) {
-        return;
+      this.setModalMessage('Loading financial data...', false);
+
+      this.hasData = await this.getUserTransactionData();
+      this.isLoading = false;
+      if (!this.hasData) {
+        this.setModalMessage('Failed to load transactions. Please try again later.', true);
+      } else if (this.userTransactionResults.length > 0) {
+        console.log('TRANSACCIONES: ', this.userTransactionResults);
+        this.showModal = false;
+      } else {
+        this.setModalMessage('There is no investment analysis to display.', true);
       }
 
-      if (this.userTransactionResults.length > 0) { /* VER QUE ESTO EN LOS OTROS 2 LO BORRE PORQUE ES COMO INNECESARIO, LO DEBERIA MANAJER SINO OBTEGO
-        LOS EN EL this.userTransactionResults. CONTROLAR LA APP ENTERA PARA VER SI FUNCIONA */
-        console.log('TRANSACCIONES: ', this.userTransactionResults); // REVISAR SI ESTA BIEN LA VALIDACION
-      } else {
-        console.log('NO HAY TRANSACCIONES');
-      }
       await this.getResult();
     },
 
@@ -111,7 +118,7 @@ export default {
           await this.fetchCryptoPrice({
             exchange: '',
             crypto: typeCrypto,
-            quantity: this.totalCoins,
+            quantity: 1,
             type: 'sale',
           });
 
@@ -133,8 +140,10 @@ export default {
         this.totalMoneyInvested = 0;
       }
     },
-    ...mapActions('userTransactionData', ['getUserTransactionData']),
-    ...mapActions('getPricesApi', ['fetchCryptoPrice']),
+    ...mapActions({
+      getUserTransactionData: 'userTransactionData/getUserTransactionData',
+      fetchCryptoPrice: 'getPricesApi/fetchCryptoPrice',
+    }),
   },
 
   computed: {
