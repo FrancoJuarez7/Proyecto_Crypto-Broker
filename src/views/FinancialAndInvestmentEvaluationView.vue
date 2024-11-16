@@ -12,11 +12,11 @@
       </CryptoDataTable>
     </div>
 
-    <div v-else-if=" !isLoading && !hasData">
+    <div v-else-if=" !isLoading && !hasData" class="messageData">
       <p>THE DATA SAVED IN THE API COULD NOT BE ACCESSED</p>
     </div>
 
-    <div v-else-if="!isLoading && this.userTransactionResults.length <= 0">
+    <div v-else-if="!isLoading && (this.userTransactionResults.length <= 0 || this.totalCoins === 0)" class="messageData">
       <p>NO TRANSACTION DATA TO DISPLAY</p>
     </div>
 
@@ -38,8 +38,7 @@ export default {
     MessagesApp,
   },
   async created() {
-    // CONTINUAR ACA QUE ME MUESTRA <p>NO TRANSACTION DATA TO DISPLAY</p> ANTES DE MOSTRAR LA TABLA
-    await this.getRowsAndColumns(); // Supón que este método carga los datos
+    await this.getRowsAndColumns();
   },
   data() {
     return {
@@ -57,13 +56,24 @@ export default {
     };
   },
   methods: {
+    /**
+ * Establece el mensaje y la visibilidad del modal.
+ *
+ * @param {string} message El mensaje que se mostrará en el modal.
+ * @param {boolean} showButton Determina si se debe mostrar un botón en el modal.
+ * @returns {void} No retorna ningún valor.
+ */
     setModalMessage(message, showButton) {
       this.showModal = true;
       this.showButton = showButton;
       this.messageApp = message;
     },
 
-    // Método para establecer las columnas
+    /**
+ * Establece las columnas para la tabla y obtiene las transacciones.
+ *
+ * @returns {Promise<void>} No devuelve nada.
+ */
     async getRowsAndColumns() {
       this.columnas = [
         'CURRENCY',
@@ -75,7 +85,13 @@ export default {
       await this.getTransactions();
     },
 
-    // Método para obtener transacciones
+    /**
+ * Obtiene las transacciones y actualiza el estado del modal.
+ *
+ * Establece el mensaje del modal según el estado de carga de las transacciones y los resultados.
+ *
+ * @returns {Promise<void>} No devuelve nada.
+ */
     async getTransactions() {
       this.setModalMessage('Loading financial data...', false);
 
@@ -84,7 +100,6 @@ export default {
       if (!this.hasData) {
         this.setModalMessage('Failed to load transactions. Please try again later.', true);
       } else if (this.userTransactionResults.length > 0) {
-        console.log('TRANSACCIONES: ', this.userTransactionResults);
         this.showModal = false;
       } else {
         this.setModalMessage('There is no investment analysis to display.', true);
@@ -93,8 +108,17 @@ export default {
       await this.getResult();
     },
 
+    /**
+ * Calcula el resultado de la inversión por tipo de criptomoneda y actualiza el estado de las filas.
+ *
+ * Recorre las transacciones, calcula el total de monedas compradas y vendidas, obtiene el valor actual
+ * de las criptomonedas, y calcula el resultado de la inversión para cada tipo de criptomoneda.
+ *
+ * @returns {Promise<void>} No devuelve ningún valor.
+ */
     async getResult() {
       let investmentResult = 0;
+      let money = 0;
 
       // Primero extraemos esa propiedad de array y luego le aplicamos el new Set. Me creara un nuevo array con nombres unicos
       this.arrayTypes = [...new Set(this.userTransactionResults.map((typeMoney) => typeMoney.crypto_code))];
@@ -122,24 +146,25 @@ export default {
             type: 'sale',
           });
 
-          investmentResult = (this.sellPrice - this.totalMoneyInvested).toFixed(2);
+          money = (this.sellPrice * this.totalCoins).toFixed(2);
+          investmentResult = (money - this.totalMoneyInvested).toFixed(2);
 
-          console.log(`MONDEDA:  ${typeCrypto} | CANTIDAD DE MONEDAS: ${this.totalCoins} | 'TOTAL DINERO ACTUAL: ' ${this.sellPrice} 
+          console.log(`MONDEDA:  ${typeCrypto} | CANTIDAD DE MONEDAS: ${this.totalCoins} | 'TOTAL DINERO ACTUAL: ' ${money} 
           | RESULTADO INVERSION: ${investmentResult}`);
 
           const investmentObject = {
             type_money: typeCrypto,
             total_coins: this.totalCoins,
-            total_money: this.sellPrice,
+            total_money: money,
             investment_result: investmentResult,
           };
           this.filas.push(investmentObject);
-          console.log(this.filas);
         }
         this.totalCoins = 0;
         this.totalMoneyInvested = 0;
       }
     },
+
     ...mapActions({
       getUserTransactionData: 'userTransactionData/getUserTransactionData',
       fetchCryptoPrice: 'getPricesApi/fetchCryptoPrice',
@@ -161,5 +186,13 @@ export default {
 </script>
 
 <style scoped>
-  /* Aquí va tu CSS */
+
+.messageData{
+  margin: 0 auto;
+  margin-top: 50px;
+  font-family: 'IBM Plex Sans', -apple-system, system-ui, blinkmacsystemfont, 'Segoe UI', roboto, ubuntu;
+  white-space: pre-line;
+  font-weight: bold;
+  font-size: 30px;
+}
 </style>

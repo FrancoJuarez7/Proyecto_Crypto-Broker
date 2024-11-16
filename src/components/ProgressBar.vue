@@ -21,31 +21,34 @@ export default {
 };
 </script>
 
-  <style scoped>
+<style scoped>
 
-  .cartel {
-    top: 0;
-    left: 0;
-    width: 50%; /* Cambia esto si deseas un tamaño diferente */
-    height: 50%; /* Cambia esto si deseas un tamaño diferente */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.cartel {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .progress-bar {
-    background-color: #e0e0e0; /* Color de fondo de la barra */
-    border-radius: 4px;
-    overflow: hidden;
-    height: 20px; /* Altura de la barra */
-    width: 100%; /* Asegúrate de que ocupa el 100% de su contenedor padre */
-    justify-content: center;
-    align-items: center;
-  }
+.progress-bar {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 20px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 150px;
+}
 
-  .progress-fill {
-    background-color: greenyellow; /* Color de la barra de progreso */
-    height: 100%; /* Llenar el 100% de la altura de la barra */
-    transition: width 0.2s; /* Transición suave para el cambio de ancho */
-  }
-  </style>
+.progress-fill {
+  background-color: greenyellow;
+  height: 100%; /* Llenar el 100% de la altura de la barra */
+  transition: width 0.2s; /* Transición suave para el cambio de ancho */
+}
+</style>

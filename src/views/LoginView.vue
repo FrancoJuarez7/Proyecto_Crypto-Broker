@@ -1,10 +1,6 @@
 <template>
   <div>
-
-     <!-- Aquí va el BANNER -->
-
     <LoginForm></LoginForm>
-
   </div>
 </template>
 
@@ -20,6 +16,6 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 
 </style>

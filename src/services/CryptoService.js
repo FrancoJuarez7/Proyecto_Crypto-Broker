@@ -5,11 +5,10 @@ const apiClient1 = axios.create({
 });
 
 const apiClient2 = axios.create({
-  baseURL: 'https://labor3-d60e.restdb.io/rest/',
-  headers: { 'x-apikey': '64a2e9bc86d8c525a3ed8f63' },
+  baseURL: 'https://laboratorio3-5459.restdb.io/rest/',
+  headers: { 'x-apikey': '64a57c2b86d8c50fe6ed8fa5' },
 });
 
-// Exportando los servicios
 export default {
 
   getPrice(coin, exchange) {
@@ -29,7 +28,7 @@ export default {
 
   savedPurchase(userId) {
     const queryString = `?q={"user_id": "${userId}"}`;
-    return apiClient2.get(`/transacons${queryString}`);
+    return apiClient2.get(`/transactions${queryString}`);
   },
 
   editTransaction(idTransaction, updateTransaction) {

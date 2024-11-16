@@ -5,8 +5,10 @@
 <style>
 
 body {
-    margin: 0;
-    overflow: hidden; /* Oculta cualquier desbordamiento */
+  margin: 0;
+  background-color:  rgb(10, 11, 13, 1);
+  overflow: hidden;
+  color: white;
 }
 
 #app {
@@ -14,22 +16,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: white;
-  background-color:  rgb(30, 35, 41);
   min-width: 900px;
   min-height: 700px;
 }
 
-nav {
-  padding: 30px;
-}
-
-nav a {
-  font-weight: bold;
-  color: white;
-}
-
-nav a.router-link-exact-active {
-  color: #94ebc4;
-}
 </style>

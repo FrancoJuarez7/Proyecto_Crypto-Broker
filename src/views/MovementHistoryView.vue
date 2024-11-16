@@ -12,10 +12,10 @@
         @editRow="updateRow">
       </CryptoDataTable>
     </div>
-    <div v-else-if=" !isLoading && !hasData">
+    <div v-else-if=" !isLoading && !hasData" class="message-data">
       <p>THE DATA SAVED IN THE API COULD NOT BE ACCESSED</p>
     </div>
-    <div v-else-if="!isLoading">
+    <div v-else-if="!isLoading" class="message-data">
       <p>NO TRANSACTION DATA TO DISPLAY</p>
     </div>
 
@@ -68,17 +68,32 @@ export default {
   methods: {
     ...mapActions('userTransactionData', ['getUserTransactionData']),
 
+    /**
+ * Establece el mensaje y la visibilidad del modal.
+ *
+ * @param {string} message El mensaje que se mostrará en el modal.
+ * @param {boolean} showButton Determina si se debe mostrar un botón en el modal.
+ * @returns {void} No retorna ningún valor.
+ */
     setModalMessage(message, showButton) {
       this.showModal = true;
       this.showButton = showButton;
       this.messageApp = message;
     },
+
+    /**
+ * Procesa los resultados de las transacciones del usuario. Asigna las filas y columnas para mostrar en una tabla.
+ *
+ * Esta función asigna los nombres de las columnas y mapea las transacciones a filas, formateando la hora para su
+ * presentación. Si no hay transacciones en `userTransactionResults`, la función no realiza ninguna acción.
+ *
+ * @returns {void} No retorna ningún valor.
+ */
     getRowsAndColumns() {
       if (this.userTransactionResults.length === 0) {
         return;
       }
 
-      // Asignar las columnas como un array de nombres
       this.columnas = [
         'USUARIO',
         'TRANSACTION',
@@ -90,7 +105,7 @@ export default {
 
       // Mapea las transacciones a filas usando this.columnas
       this.filas = this.userTransactionResults.map((transaction) => [
-        transaction._id, // Asegúrate de que estos nombres coincidan con tus datos
+        transaction._id,
         transaction.action,
         transaction.crypto_code,
         transaction.crypto_amount,
@@ -98,17 +113,27 @@ export default {
         this.formatDatetime(transaction.datetime),
       ]);
     },
+
+    /**
+ * Formatea una cadena de fecha y hora en un formato específico para visualización en español (Argentina).
+ *
+ * Esta función toma una fecha y hora y la formatea para ser visualizada en formato local argentino (es-AR).
+ *
+ * Luego, utiliza `toLocaleDateString` para obtener la fecha en formato `DD/MM/YYYY` y `toLocaleTimeString` en
+ * formato de 24 horas (sin AM/PM) para la hora. El formato final presentado es `HH:mm, DD/MM/YYYY`.
+ *
+ * @param {string|Date} datetime - La fecha y hora a formatear, puede ser una cadena en formato ISO 8601 o un objeto Date.
+ * @returns {string} La fecha y hora formateadas en el formato `HH:mm, DD/MM/YYYY`.
+ * Devuelve 'Fecha inválida' si el parámetro es nulo o no está definido.
+ */
     formatDatetime(datetime) {
-      // Verifica si el datetime está definido o es un valor válido
       if (!datetime) {
         console.error('El datetime no está definido o es nulo:', datetime);
         return 'Fecha inválida';
       }
 
-      // Asegúrate de que el objeto Date interprete la fecha como UTC
       const date = new Date(datetime);
 
-      // Establece las opciones de formateo para la fecha y la hora según la zona horaria local
       const optionsDate = {
         year: 'numeric',
         month: '2-digit',
@@ -127,6 +152,16 @@ export default {
       // Devuelve en el formato correcto: hora primero, luego fecha
       return `${formattedTime}, ${formattedDate}`;
     },
+
+    /**
+ * Elimina una fila del array `filas` en función del índice proporcionado.
+ *
+ * Si el índice de la fila es válido, la fila se elimina usando el método `splice`.
+ * Si el índice es inválido (fuera del rango), se muestra un error en la consola.
+ *
+ * @param {number} rowIndex El índice de la fila a eliminar en el array `filas`.
+ * @returns {void} Esta función no devuelve ningún valor.
+ */
     removeRow(rowIndex) {
       console.log('Removing row at index:', rowIndex);
       if (rowIndex >= 0 && rowIndex < this.filas.length) {
@@ -135,6 +170,18 @@ export default {
         console.error('Invalid rowIndex:', rowIndex);
       }
     },
+
+    /**
+ * Actualiza una fila en el array `filas` basándose en el ID de la transacción.
+ *
+ * Busca la fila correspondiente al `idTransaction` y, si se encuentra, actualiza sus valores
+ * con los datos proporcionados en `updateTransaction`. Si el ID de la transacción no se encuentra,
+ * la fila no se actualiza.
+ *
+ * @param {number} idTransaction El ID de la transacción cuya fila se desea actualizar.
+ * @param {Object} updateTransaction Un objeto con los nuevos valores para la transacción.
+ * @returns {void} Esta función no devuelve ningún valor, solo actualiza el array `filas`.
+ */
     updateRow(idTransaction, updateTransaction) {
       const rowIndex = this.filas.findIndex((row) => row[0] === idTransaction);
       if (rowIndex !== -1) {
@@ -148,12 +195,22 @@ export default {
   },
   computed: {
     ...mapGetters({
-      password: 'password', // Getter del módulo raíz
-      userTransactionResults: 'userTransactionData/userTransactionResults', // Getter del módulo userTransactionData
+      password: 'password',
+      userTransactionResults: 'userTransactionData/userTransactionResults',
     }),
   },
 };
 </script>
 
 <style scoped>
+
+.message-data{
+  margin: 0 auto;
+  margin-top: 50px;
+  font-family: 'IBM Plex Sans', -apple-system, system-ui, blinkmacsystemfont, 'Segoe UI', roboto, ubuntu;
+  white-space: pre-line;
+  font-weight: bold;
+  font-size: 30px;
+}
+
 </style>
