@@ -50,7 +50,7 @@ La aplicación permite a los usuarios:
 
 ### Pantalla de Análisis del Estado Actual && Análisis de Inversiones
 - Proporciona una vista del estado actual de las finanzas del usuario.
-- - Muestra:
+- Muestra:
   - Las criptomonedas poseídas, su cantidad, y el equivalente en dinero en base al precio actual.
   - El monto total de dinero.
   - El resultado de las inversiones, indicando ganancias o pérdidas para cada criptomoneda.
