@@ -7,9 +7,7 @@
 - [Descripción](#descripción)
 - [Funcionalidades](#funcionalidades)
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Configuración del Entorno](#configuración-del-entorno)
-- [Uso](#uso)
-- [API](#api)
+- [API](#apis-utilizadas)
 - [Contribuciones](#contribuciones)
 
 ---
