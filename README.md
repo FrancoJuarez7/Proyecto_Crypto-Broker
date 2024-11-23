@@ -1,6 +1,6 @@
 # Crypto Broker
 
-**Crypto Broker** es una aplicación web para gestionar y monitorear una cartera de criptomonedas, permitiendo realizar compras y ventas de criptomonedas, visualizar el historial de transacciones, editar o eliminar transacciones individuales y llevar un registro de las ganancias y perdidas de dinero. Este proyecto es el trabajo final de la materia *Laboratorio de Computación III* (2023).
+**Crypto Broker** es una aplicación web diseñada para gestionar y monitorear una cartera de criptomonedas. Permite a los usuarios realizar operaciones de compra y venta, visualizar un historial detallado de transacciones, asi como editar y eliminar movimientos, manteniendo un registro de ganancias y pérdidas financieras.
 
 ## Índice
 
