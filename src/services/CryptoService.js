@@ -4,16 +4,37 @@ const apiClient1 = axios.create({
   baseURL: 'https://criptoya.com/api',
 });
 
-/* const apiClient2 = axios.create({
-  baseURL: 'https://laboratorio3-f36a.restdb.io/rest',
-  headers: { 'x-apikey': '60eb09146661365596af552f' },
-}); */
+const apiClient2 = axios.create({
+  baseURL: 'https://laboratorio3-5459.restdb.io/rest/',
+  headers: { 'x-apikey': '64a57c2b86d8c50fe6ed8fa5' },
+});
 
-// api/{coin}/{fiat}/{volumen} --> /api/BTC/ARS/1
 export default {
 
-  getPrice() {
-    return apiClient1.get('/{coin}/ARS/{volumen}');
+  getPrice(coin, exchange) {
+    const exchangeNow = exchange || 'letsbit';
+    return apiClient1.get(`/${exchangeNow}/${coin}/ARS/${0.1}`);
   },
 
+  PostSaveCryptoPurchase(objectsDataPurchase) {
+    const purchaseData = { ...objectsDataPurchase, datetime: new Date().toISOString() }; // Crea una copia del objeto original
+    return apiClient2.post('/transactions', purchaseData);
+  },
+
+  PostSaveCryptoSale(objectsDataSale) {
+    return apiClient2.post('/transactions', objectsDataSale);
+  },
+
+  savedPurchase(userId) {
+    const queryString = `?q={"user_id": "${userId}"}`;
+    return apiClient2.get(`/transactions${queryString}`);
+  },
+
+  editTransaction(idTransaction, updateTransaction) {
+    return apiClient2.patch(`/transactions/${idTransaction}`, updateTransaction);
+  },
+
+  deleteTransaction(idTransaction) {
+    return apiClient2.delete(`/transactions/${idTransaction}`);
+  },
 };

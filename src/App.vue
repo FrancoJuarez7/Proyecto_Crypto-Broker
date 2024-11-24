@@ -1,33 +1,23 @@
 <template>
-  <nav>
-    <router-link to="/">Login</router-link> |
-    <router-link to="/buying-and-selling">Buying And Selling</router-link> |
-    <router-link to="/movement-history">MovementHistory</router-link> |
-    <router-link to="/current-status-analysis">Current Status Analysis</router-link> |
-    <router-link to="/investment-analysis">Investment Analysis</router-link>
-  </nav>
   <router-view/>
 </template>
 
 <style>
+
+body {
+  margin: 0;
+  background-color:  rgb(10, 11, 13, 1);
+  overflow: hidden;
+  color: white;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  min-width: 900px;
+  min-height: 700px;
 }
 
-nav {
-  padding: 30px;
-}
-
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-nav a.router-link-exact-active {
-  color: #42b983;
-}
 </style>
