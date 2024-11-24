@@ -5,8 +5,8 @@
 
     <div v-if=" !isLoading && userTransactionResults?.length > 0">
       <CryptoDataTable
-        :columnasProp="columnas"
-        :filasProps="filas"
+        :columnsProp="columns"
+        :rowsProps="rows"
         :actionsButton="actions"
         @deletedRow="removeRow"
         @editRow="updateRow">
@@ -38,19 +38,24 @@ export default {
     MessagesApp,
   },
   async created() {
-    this.setModalMessage('Loading your transaction data, please wait...', false);
+    try {
+      this.setModalMessage('Loading your transaction data, please wait...', false);
+      this.hasData = await this.getUserTransactionData();
+      this.isLoading = false;
 
-    this.hasData = await this.getUserTransactionData();
-    this.isLoading = false; // Sea true o false deja de cargar
-
-    // Verifica si hay datos y actualiza el estado según el resultado
-    if (!this.hasData) {
-      this.setModalMessage('Failed to obtain transaction data. Please refresh the page or try again later.', true);
-    } else if (this.userTransactionResults.length > 0) {
-      this.showModal = false;
-      this.getRowsAndColumns();
-    } else {
-      this.setModalMessage('There are currently no transactions to display.', true);
+      // Verifica si hay datos y actualiza el estado según el resultado
+      if (!this.hasData) {
+        this.setModalMessage('Failed to obtain transaction data. Please refresh the page or try again later.', true);
+      } else if (this.userTransactionResults.length > 0) {
+        this.showModal = false;
+        this.getRowsAndColumns();
+      } else {
+        this.setModalMessage('There are currently no transactions to display.', true);
+      }
+    } catch (error) {
+      console.error('Error fetching transaction data:', error);
+      this.setModalMessage('An error occurred while loading transaction data. Please try again later.', true);
+      this.isLoading = false;
     }
   },
   data() {
@@ -61,8 +66,8 @@ export default {
       hasData: false, // Tiene datos ?
       actions: true,
       messageApp: '',
-      columnas: [],
-      filas: [],
+      columns: [],
+      rows: [],
     };
   },
   methods: {
@@ -84,9 +89,6 @@ export default {
     /**
  * Procesa los resultados de las transacciones del usuario. Asigna las filas y columnas para mostrar en una tabla.
  *
- * Esta función asigna los nombres de las columnas y mapea las transacciones a filas, formateando la hora para su
- * presentación. Si no hay transacciones en `userTransactionResults`, la función no realiza ninguna acción.
- *
  * @returns {void} No retorna ningún valor.
  */
     getRowsAndColumns() {
@@ -94,8 +96,8 @@ export default {
         return;
       }
 
-      this.columnas = [
-        'USUARIO',
+      this.columns = [
+        'USER',
         'TRANSACTION',
         'CURRENCY',
         'AMOUNT',
@@ -104,7 +106,7 @@ export default {
       ];
 
       // Mapea las transacciones a filas usando this.columnas
-      this.filas = this.userTransactionResults.map((transaction) => [
+      this.rows = this.userTransactionResults.map((transaction) => [
         transaction._id,
         transaction.action,
         transaction.crypto_code,
@@ -117,14 +119,9 @@ export default {
     /**
  * Formatea una cadena de fecha y hora en un formato específico para visualización en español (Argentina).
  *
- * Esta función toma una fecha y hora y la formatea para ser visualizada en formato local argentino (es-AR).
- *
- * Luego, utiliza `toLocaleDateString` para obtener la fecha en formato `DD/MM/YYYY` y `toLocaleTimeString` en
- * formato de 24 horas (sin AM/PM) para la hora. El formato final presentado es `HH:mm, DD/MM/YYYY`.
- *
  * @param {string|Date} datetime - La fecha y hora a formatear, puede ser una cadena en formato ISO 8601 o un objeto Date.
- * @returns {string} La fecha y hora formateadas en el formato `HH:mm, DD/MM/YYYY`.
- * Devuelve 'Fecha inválida' si el parámetro es nulo o no está definido.
+ * @returns {string} La fecha y hora formateadas en el formato `HH:mm, DD/MM/YYYY`. Devuelve 'Fecha inválida' si el
+ * parámetro es nulo o no está definido.
  */
     formatDatetime(datetime) {
       if (!datetime) {
@@ -156,16 +153,13 @@ export default {
     /**
  * Elimina una fila del array `filas` en función del índice proporcionado.
  *
- * Si el índice de la fila es válido, la fila se elimina usando el método `splice`.
- * Si el índice es inválido (fuera del rango), se muestra un error en la consola.
- *
  * @param {number} rowIndex El índice de la fila a eliminar en el array `filas`.
- * @returns {void} Esta función no devuelve ningún valor.
+ * @returns {void} No retorna ningún valor..
  */
     removeRow(rowIndex) {
       console.log('Removing row at index:', rowIndex);
-      if (rowIndex >= 0 && rowIndex < this.filas.length) {
-        this.filas.splice(rowIndex, 1);
+      if (rowIndex >= 0 && rowIndex < this.rows.length) {
+        this.rows.splice(rowIndex, 1);
       } else {
         console.error('Invalid rowIndex:', rowIndex);
       }
@@ -174,22 +168,18 @@ export default {
     /**
  * Actualiza una fila en el array `filas` basándose en el ID de la transacción.
  *
- * Busca la fila correspondiente al `idTransaction` y, si se encuentra, actualiza sus valores
- * con los datos proporcionados en `updateTransaction`. Si el ID de la transacción no se encuentra,
- * la fila no se actualiza.
- *
  * @param {number} idTransaction El ID de la transacción cuya fila se desea actualizar.
  * @param {Object} updateTransaction Un objeto con los nuevos valores para la transacción.
- * @returns {void} Esta función no devuelve ningún valor, solo actualiza el array `filas`.
+ * @returns {void} No retorna ningún valor, solo actualiza el array `filas`.
  */
     updateRow(idTransaction, updateTransaction) {
-      const rowIndex = this.filas.findIndex((row) => row[0] === idTransaction);
+      const rowIndex = this.rows.findIndex((row) => row[0] === idTransaction);
       if (rowIndex !== -1) {
-        this.filas[rowIndex][1] = updateTransaction.action;
-        this.filas[rowIndex][2] = updateTransaction.crypto_code;
-        this.filas[rowIndex][3] = updateTransaction.crypto_amount;
-        this.filas[rowIndex][4] = updateTransaction.money;
-        this.filas[rowIndex][5] = this.formatDatetime(updateTransaction.datetime);
+        this.rows[rowIndex][1] = updateTransaction.action;
+        this.rows[rowIndex][2] = updateTransaction.crypto_code;
+        this.rows[rowIndex][3] = updateTransaction.crypto_amount;
+        this.rows[rowIndex][4] = updateTransaction.money;
+        this.rows[rowIndex][5] = this.formatDatetime(updateTransaction.datetime);
       }
     },
   },

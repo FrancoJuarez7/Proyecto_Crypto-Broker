@@ -4,8 +4,8 @@
     <table class="table-crypto">
       <thead>
         <tr>
-          <th v-for="(columna, index) in visibleColumns" :key="index">
-            {{ columna }}
+          <th v-for="(column, index) in visibleColumns" :key="index">
+            {{ column }}
           </th>
           <th v-if="actionsButton">
             ACTIONS
@@ -45,7 +45,7 @@
           <h3>TRANSACTION DETAILS</h3>
           <ul>
             <li v-for="(value, index) in selectedRow" :key="index">
-            {{ visibleColumns[index] ? visibleColumns[index] : 'Columna no visible' }}: {{ value }}
+            {{ visibleColumns[index] ? visibleColumns[index] : 'Column no visible' }}: {{ value }}
             </li>
           </ul>
         </div>
@@ -73,7 +73,7 @@
           <label><input class="selection-edit"  type="number" placeholder="AMOUNT" v-model="Amount" min="0.000001" max="100"></label> <br> <br>
           <label><input class="selection-edit"  type="number" placeholder="PRICE" v-model="Price" readonly></label> <br> <br>
 
-          <button class= "btn-table" @click="updateTransaction">EDITAR</button> <button class= "btn-table" @click="closeModal" >CANCELAR</button>
+          <button class= "btn-table" @click="updateTransaction">EDIT</button> <button class= "btn-table" @click="closeModal" >CANCEL</button>
 
         </div>
       </div>
@@ -93,11 +93,11 @@ export default {
     MessagesApp,
   },
   props: {
-    columnasProp: {
+    columnsProp: {
       type: Array,
       required: true,
     },
-    filasProps: {
+    rowsProps: {
       type: Array,
       required: true,
     },
@@ -130,16 +130,11 @@ export default {
     /**
  * Muestra los detalles de una transacción específica en un modal.
  *
- * Utiliza el índice de fila (`rowIndex`) para acceder a una transacción en `filteredRows` (excluyendo filas de usuarios).
- * Si la transacción seleccionada no coincide con `selectedRow`, actualiza `selectedRow`, muestra el modal y
- * habilita el modo de visualización.
- *
  * @param {number} rowIndex - El índice de la fila seleccionada desde el template.
- * @returns {void} Este método no devuelve ningún valor, solo actualiza el estado de `selectedRow` y del modal.
+ * @returns {void} No retorna ningún valor, solo actualiza el estado de `selectedRow` y del modal.
  */
-
     viewTransaction(rowIndex) {
-      /* filteredRows devuelve un array con las filas de las transacciones menos la de la columa USUARIOS. */
+      /* filteredRows devuelve un array con las filas de las transacciones menos la de la columa USER. */
       if (this.selectedRow !== this.filteredRows[rowIndex]) { // this.filteredRows[0])
         this.selectedRow = this.filteredRows[rowIndex];
         this.showModal = true;
@@ -151,27 +146,22 @@ export default {
     /**
  * Elimina una transacción específica y actualiza la tabla principal.
  *
- * Obtiene el `transactionId` de la fila seleccionada (`rowIndex`), muestra un mensaje de carga,
- * y luego intenta eliminar la transacción mediante `CryptoService.deleteTransaction`.
- * Si la eliminación es exitosa, emite un evento para actualizar la tabla en el componente padre.
- * Si ocurre un error, muestra un mensaje de error.
- *
  * @param {number} rowIndex - Índice de la fila a eliminar.
- * @returns {void} Esta función no devuelve ningún valor; solo gestiona el estado de la interfaz y emite eventos.
+ * @returns {void} No retorna ningún valor, solo gestiona el estado de la interfaz y emite eventos.
  */
-
     deleteTransaction(rowIndex) {
-      const transactionId = this.filasProps[rowIndex][0];
+      const transactionId = this.rowsProps[rowIndex][0];
       console.log('Transaction ID:', transactionId);
       console.log('Deleting transaction at index:', rowIndex);
 
       this.setModalMessage('Deleting transaction...', false);
 
-      CryptoService.deleteTransaction(this.filasProps[rowIndex][0]) // Primero: elimino la fila.
+      CryptoService.deleteTransaction(this.rowsProps[rowIndex][0]) // Primero: elimino la fila.
         .then(() => {
-          this.$emit('deletedRow', rowIndex); /* Segundo: emito un evento para actualizarlo en la tabla porque como tengo que eliminar algo
-          que se guarda en filasProps que es una props y no puedo modificarla desde un componente hijo . Le debo pasar el indice de la fila a
-          eliminar. IR A ESTE METODO EN EL PADRE */
+          this.$emit('deletedRow', rowIndex);
+          /* Segundo: Emito un evento para actualizar la tabla, ya que las filas se almacenan en `rowsProps`, que es una
+          prop. No puedo modificarla directamente desde un componente hijo. Debo pasar el índice de la fila que quiero
+          eliminar. Consultar este método en el componente padre. */
 
           this.setModalMessage('Transaction deleted successfully.', true);
         })
@@ -184,11 +174,9 @@ export default {
     /**
  * Configura el mensaje del modal y controla la visibilidad del botón.
  *
- * Muestra un modal con el mensaje proporcionado y define si el botón debe mostrarse.
- *
  * @param {string} message - El mensaje a mostrar en el modal.
  * @param {boolean} showButton - Indica si el botón debe mostrarse en el modal.
- * @returns {void} Esta función no devuelve ningún valor; solo actualiza el estado del modal.
+ * @returns {void} No retorna ningún valor, solo actualiza el estado del modal.
  */
 
     setModalMessage(message, showButton) {
@@ -200,12 +188,8 @@ export default {
     /**
  * Cierra el modal de la interfaz de usuario.
  *
- * Este método cambia el estado de `showModal` a `false` para ocultar el modal.
- * No devuelve ningún valor y solo altera el estado de la interfaz.
- *
- * @returns {void} Esta función no devuelve ningún valor.
+ * @returns {void} No retorna ningún valor.
  */
-
     closeModal() {
       this.showModal = false;
     },
@@ -213,90 +197,83 @@ export default {
     /**
  * Abre el formulario de edición y carga los datos de la transacción seleccionada.
  *
- * Este método muestra un modal para editar una transacción específica. Obtiene el `idTransaction` de la fila seleccionada
- * y lo usa para cargar los datos correspondientes. Lueo, llena el formulario con la información de la transacción
- * y muestra un mensaje de carga hasta que los datos estén disponibles.
- *
  * @param {number} rowIndex - Índice de la fila seleccionada en la tabla de transacciones.
- *
- * @returns {void} Este método no devuelve un valor. Solo maneja la visualización y carga de datos para el formulario.
+ * @returns {void} No retorna ningún valor. Solo maneja la visualización y carga de datos para el formulario.
  */
-
     async loadEditForm(rowIndex) {
-      this.showModal = true;
-      this.modalView = false;
+      try {
+        // Muestra el modal y configura la vista para editar
+        this.showModal = true;
+        this.modalView = false;
 
-      const [idTransaction] = this.filasProps[rowIndex]; // Desectructuramos el array y guardamos el primer valor aqui.
-      /* La desestructuración de arrays te permite tomar los valores de un array y asignarlos directamente a variables utilizando una sintaxis
-    similar a la de los arrays. Esto elimina la necesidad de acceder a cada elemento del array manualmente por su índice. */
+        // Desestructura el array y guarda el primer valor como ID de transacción
+        const [idTransaction] = this.rowsProps[rowIndex];
+        this.idTransaction = idTransaction; // Asigna el valor a idTransaction en data()
 
-      this.idTransaction = idTransaction; // Luego a ese valor se lo asigno a mi variable en el data().
-      this.modalEdit = true;
-      this.resetModalValues();
+        // Configura el modal para la edición y reinicia los valores
+        this.modalEdit = true;
+        this.resetModalValues();
 
-      this.setModalMessage('Filling out the form data.', false);
-      await this.getUserTransactionData();
-      this.showModalMessage = false;
+        // Muestra un mensaje de carga en el modal
+        this.setModalMessage('Filling out the form data.', false);
 
-      this.formCompletion();
-    },
+        // Llama a la función para obtener los datos de transacción del usuario
+        await this.getUserTransactionData();
+        this.showModalMessage = false;
 
-    /**
- * Abre el formulario de edición y carga los datos de la transacción seleccionada.
- *
- * Este método muestra un modal para editar una transacción específica. Obtiene el `idTransaction` de la fila seleccionada
- * y lo usa para cargar los datos correspondientes. Llena el formulario con la información de la transacción y muestra un
- * mensaje de carga hasta que los datos estén disponibles.
- *
- * @param {number} rowIndex - Índice de la fila seleccionada en la tabla de transacciones.
- *
- * @returns {void} Este método no devuelve un valor. Solo maneja la visualización y carga de datos para el formulario.
- */
-
-    async formCompletion() {
-    // Recorre las transacciones del usuario y la compara con el id de la columna que guarda el ID de la transaccion del usuaio
-      const dataUser = this.userTransactionResults.find((user) => user._id === this.idTransaction);
-
-      // Si coinciden, los datos que obtengo del objeto de las transacciones, se los asigno al modal:
-      if (dataUser) {
-        this.selectedCrypto = dataUser.crypto_code; // MONEDA
-        this.selectTransaction = (dataUser.action).toLowerCase(); // ACCION: PURCHASE O SALE
-        this.Amount = parseFloat(dataUser.crypto_amount); // CANTIDAD DE MONEDA
-
-        if (this.isValidForm()) {
-          await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
-        }
+        // Completa el formulario con los datos obtenidos
+        await this.formCompletion();
+      } catch (error) {
+        console.error('Error in loadEditForm:', error);
+        this.setModalMessage('An error occurred while loading the edit form. Please try again later.', true);
       }
     },
 
-    // LO QUE PODRIA REPASAR ES PORQUE CUANDO ELIJO EL TIPO DE EXCHANGE ANTES DE QUE SE OBTENLA LOS DATOS DE LA API LUEGO ME MUESTRA:
-    /* LETSBIT DAI 1 sale
-    LETSBIT DAI 1 sale
-    LETSBIT DAI 1 sale
-    LETSBIT DAI 1 sale
-    LETSBIT DAI 1 sale
-    SI SELECCIONO EXCHANGE ANTES QUE SE AUTOCOMPELTEN LOS DATOS ME PASA ESO DE QUE LLAMA VARIAS VECES AL AWAIT
-    */
+    /**
+ * Completa los campos del formulario con los datos de la transacción seleccionada.
+ *
+ * @returns {void} No retorna ningún valor..
+ */
+    async formCompletion() {
+      try {
+        // Recorre las transacciones del usuario y la compara con el id de la transacción del usuario
+        const dataUser = this.userTransactionResults.find((user) => user._id === this.idTransaction);
 
+        // Si coincide, asigna los datos obtenidos al modal
+        if (dataUser) {
+          this.selectedCrypto = dataUser.crypto_code; // MONEDA
+          this.selectTransaction = dataUser.action.toLowerCase(); // ACCION: PURCHASE o SALE
+          this.Amount = parseFloat(dataUser.crypto_amount); // CANTIDAD DE MONEDA
+
+          if (this.isValidForm()) {
+            // Actualiza el precio basado en la criptomoneda seleccionada, la cantidad, y la acción
+            await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+          } else {
+            this.setModalMessage('Form data is invalid. Please check the entered values.', true);
+            this.closeModal();
+          }
+        } else {
+          // Si no encuentra el ID de la transacción
+          this.setModalMessage('Transaction not found. Please verify the transaction ID.', true);
+        }
+      } catch (error) {
+        console.error('Error in formCompletion:', error);
+        this.setModalMessage('An error occurred while completing the form. Please try again later.', true);
+      }
+    },
     /**
  * Actualiza el precio de la transacción en función de la criptomoneda seleccionada, la cantidad y el tipo de transacción.
- *
- * Este método calcula el precio de la criptomoneda dependiento de de los parámetros (como el tipo de transacción, la criptomoneda seleccionada).
- * Actualiza la interfaz del usuario con los valores correspondientes. Si el cálculo del precio falla o los datos son inválidos, se muestra un
- * mensaje de error.
  *
  * @param {string} selectedCrypto - Criptomoneda seleccionada (ejemplo: 'BTC', 'ETH').
  * @param {number} Amount - Cantidad de criptomoneda.
  * @param {string} selectTransaction - Tipo de transacción (puede ser 'purchase' o 'sale').
- *
- * @returns {Promise<void>} Este método es asíncrono y no devuelve un valor, pero puede actualizar el estado de la aplicación
+ * @returns {Promise<void>} Este método es asíncrono y no retorna ningún valor, pero puede actualizar el estado de la aplicación
  * y mostrar mensajes de error en caso de fallos durante el cálculo del precio.
  */
 
     async updatePrice(selectedCrypto, Amount, selectTransaction) {
       try {
         if (this.selectedExchangeCrypto) {
-          // debugger en chrome que es cuando mas tarda en cargar donde puedo probar esto;
           console.log(this.selectedExchangeCrypto, selectedCrypto, Amount, selectTransaction);
 
           this.setModalMessage('Calculating price...', false);
@@ -326,59 +303,57 @@ export default {
     /**
  * Actualiza la transacción en función del tipo de acción (compra o venta).
  *
- * Este método valida los datos del formulario, y dependiendo de si la acción es una compra o venta,
- * realiza diferentes verificaciones. Si la acción es una compra, simplemente se procesan los datos.
- * Si la acción es una venta, verifica si el usuario tiene suficientes monedas de la criptomoneda seleccionada
- * para realizar la transacción. Si no es así, muestra un mensaje de error.
- *
  * @returns {Promise<void>} Este método es asíncrono y puede actualizar el estado de la interfaz de usuario,
  * mostrando mensajes de error si los datos no son válidos o si el usuario no tiene suficiente saldo para realizar una venta.
  */
 
     async updateTransaction() {
-      if (!this.isValidForm()) {
-        this.setModalMessage('Check that the data is incomplete.', true);
-        this.resetModalValues();
-        return;
-      }
+      try {
+        if (!this.isValidForm()) {
+          this.setModalMessage('Check that the data is incomplete.', true);
+          this.resetModalValues();
+          return;
+        }
 
-      if ((this.selectTransaction).toLocaleLowerCase() === 'purchase') {
-        await this.handlingEditedData();
-      } else {
-        let totalCoins = 0;
+        if (this.selectTransaction.toLowerCase() === 'purchase') {
+          await this.handlingEditedData();
+        } else {
+          let totalCoins = 0;
 
-        this.userTransactionResults.forEach((transactionData) => {
-          if (this.selectedCrypto === transactionData.crypto_code) {
-            totalCoins += transactionData.crypto_amount; // Si es igual, suma para ver si tengo esa moneda a vender
+          this.userTransactionResults.forEach((transactionData) => {
+            if (this.selectedCrypto === transactionData.crypto_code) {
+              totalCoins += transactionData.crypto_amount;
+            }
+          });
+
+          // Verificaciones para la venta
+          if (totalCoins === 0) {
+            this.setModalMessage('Does not have that type of currency available for sale.', true);
+            this.resetModalValues();
+            this.closeModal();
+            return;
           }
-        });
 
-        if (totalCoins === 0) {
-          this.setModalMessage('Does not have that type of currency available for sale.', true);
-          console.log('No cuenta con esa tipo de moneda para vender');
-          this.resetModalValues();
-          return;
+          if (this.Amount > totalCoins) {
+            this.setModalMessage('Does not have that amount of currency available for sale.', true);
+            this.resetModalValues();
+            this.closeModal();
+            return;
+          }
+
+          // Llama a handlingEditedData si todas las validaciones se cumplen
+          await this.handlingEditedData();
         }
-
-        if (this.Amount > totalCoins) {
-          this.setModalMessage('Does not have that amount of currency available for sale.', true);
-          console.log('No cuenta con esa cantidad de moneda para vender');
-          this.resetModalValues();
-          return;
-        }
-
-        await this.handlingEditedData();
+      } catch (error) {
+        console.error('Error updating transaction:', error);
+        this.setModalMessage('An error occurred while updating the transaction. Please try again later.', true);
+        this.resetModalValues();
       }
     },
 
     /**
- * Maneja la edición de una transacción, enviando los datos actualizados al servicio correspondiente
- * y emitiendo un evento para actualizar la fila en la interfaz de usuario.
- *
- * Este método crea un objeto con los nuevos datos de la transacción (acción, criptomoneda, cantidad, precio y fecha),
- * luego llama al servicio `CryptoService.editTransaction` para actualizar la transacción en el backend.
- * Si la actualización es exitosa, emite un evento para actualizar la fila en la interfaz de usuario.
- * En caso de error, muestra un mensaje de error en el modal.
+ * Maneja la edición de una transacción, enviando los datos actualizados al servicio correspondiente y emitiendo un evento
+ * para actualizar la fila en la interfaz de usuario.
  *
  * @returns {Promise<void>} Este método es asíncrono y maneja la edición de la transacción. Puede mostrar mensajes
  * de éxito o error según el resultado de la operación.
@@ -410,24 +385,18 @@ export default {
     /**
  * Genera una cadena de fecha y hora en formato ISO 8601 en UTC, recortando los milisegundos.
  *
- * Esta función obtiene la fecha y hora actuales en UTC y las formatea en el estándar ISO 8601, eliminando los
- * milisegundos para obtener la precisión de segundos. Es útil en aplicaciones donde se requiere un formato
- * uniforme y sin zonas horarias locales, como al enviar datos a una API.
- *
  * @returns {string} La fecha y hora actual en formato `YYYY-MM-DDTHH:mm:ssZ`, en UTC.
  * Ejemplo: "2024-11-09T11:15Z"
  */
     getDateandTime() {
-      const now = new Date();
-      return `${now.toISOString().slice(0, -5)}Z`; // Recorta los milisegundos
+      const dateNow = new Date();
+      return `${dateNow.toISOString().slice(0, -5)}Z`; // Recorta los milisegundos
     },
 
     /**
  * Resetea los valores del formulario del modal a su estado inicial.
- * Este método se llama generalmente después de realizar una operación (como editar o agregar una transacción)
- * para limpiar todos los campos del modal y preparar el formulario para una nueva interacción.
  *
- * @returns {void} Este método no retorna nada, solo restablece las variables de estado del formulario.
+ * @returns {void} No retorna ningún valor, solo restablece las variables de estado del formulario.
  */
     resetModalValues() {
       this.selectedExchangeCrypto = '';
@@ -438,19 +407,15 @@ export default {
     },
 
     /**
- * Verifica si los campos del formulario son válidos para realizar la operación. Este método realiza una evaluación
- * lógica de los valores de las propiedades del formulario y devuelve `true` si todos los campos son válidos, o
- * `false` si alguno de los campos no lo es. Se asegura de que todos los campos necesarios tengan un valor asignado
- * y que la cantidad (`Amount`) sea un valor positivo o igual a cero.
+ * Verifica si los campos del formulario son válidos para realizar la operación.
  *
  * @returns {boolean} Devuelve `true` si todos los campos son válidos, de lo contrario devuelve `false`.
  */
 
     isValidForm() {
-      return (/* CUANDO LA LLAME, EVALUARA LA EXPRESION Y DEVOLVERA EL RESULTADO (BOOLEANO) DE LA EXPRESION LOGICA QUE LO PUEDO UTILIZAR PARA
-      REALIZAR VALIDACIONES */
-        this.selectedExchangeCrypto
-        && this.selectedCrypto
+      return (/* Al llamarla, evaluará la expresión y devolverá el resultado (un valor booleano) de la expresión lógica,
+      el cual se puede utilizar para realizar validaciones. */
+        this.selectedCrypto
         && this.selectTransaction
         && this.Amount
         && this.Amount >= 0
@@ -467,23 +432,45 @@ export default {
   },
   watch: {
     async selectedCrypto() {
-      if (this.isValidForm()) {
-        await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+      try {
+        if (this.isValidForm()) {
+          await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+        }
+      } catch (error) {
+        console.error('Error updating price for selectedCrypto:', error);
+        this.setModalMessage('An error occurred while updating the price. Please try again later.', true);
       }
     },
     async selectTransaction() {
-      if (this.isValidForm()) {
-        await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+      try {
+        if (this.isValidForm()) {
+          await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+        }
+      } catch (error) {
+        console.error('Error updating price for selectTransaction:', error);
+        this.setModalMessage('An error occurred while updating the price. Please try again later.', true);
       }
     },
+
     async selectedExchangeCrypto() {
-      if (this.isValidForm()) {
-        await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+      try {
+        if (this.isValidForm()) {
+          await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+        }
+      } catch (error) {
+        console.error('Error updating price for selectedExchangeCrypto:', error);
+        this.setModalMessage('An error occurred while updating the price. Please try again later.', true);
       }
     },
+
     async Amount() {
-      if (this.isValidForm()) {
-        await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+      try {
+        if (this.isValidForm()) {
+          await this.updatePrice(this.selectedCrypto, this.Amount, this.selectTransaction);
+        }
+      } catch (error) {
+        console.error('Error updating price for Amount:', error);
+        this.setModalMessage('An error occurred while updating the price. Please try again later.', true);
       }
     },
   },
@@ -501,31 +488,26 @@ export default {
     }),
 
     visibleColumns() {
-      if (!this.columnasProp) {
-        // Devuelve un array vacío si columnasProp es undefined o null
+      if (!this.columnsProp) {
+        // Devuelve un array vacío si columnsProp es undefined o null
         return [];
-      } if (this.columnasProp.includes('USUARIO')) {
-        // Si 'USUARIO' está en columnasProp, devuelve todas las columnas excepto 'USUARIO'
-        return this.columnasProp.filter((columna) => columna !== 'USUARIO');
+      } if (this.columnsProp.includes('USER')) {
+        // Si 'USUARIO' está en columnsProp, devuelve todas las columnas excepto 'USUARIO'
+        return this.columnsProp.filter((column) => column !== 'USER');
       }
-      // Si 'USUARIO' no está en columnasProp, devuelve todas las columnas sin modificación
-      return this.columnasProp;
+      // Si 'USUARIO' no está en columnsProp, devuelve todas las columnas sin modificación
+      return this.columnsProp;
     },
 
-    /* ESTO ME DEVUELVE UN ARRAY de cada fila filtrando que no se muestren los datos de la columna "USUARIO". filasProps.map recorre
-    cada fila de las transacciones que recibo de la API, dentro de cada fila, aplica `filter` eliminando losbvalores correspondientes a
-    la columna "USUARIO".  De este modo, se excluyen los datos de la columna "USUARIO" en la visualización de la tabla, pero estos datos
-    permanecen disponibles en el código para su uso posterior. */
-
     filteredRows() {
-      if (!this.filasProps) {
+      if (!this.rowsProps) {
         return [];
       }
 
-      return this.filasProps.map((row) => {
+      return this.rowsProps.map((row) => {
         // Verifica si 'row' es un array antes de aplicar .filter()
         if (Array.isArray(row)) {
-          return row.filter((_, index) => this.columnasProp[index] !== 'USUARIO');
+          return row.filter((_, index) => this.columnsProp[index] !== 'USER');
         }
         // Si no es un array, devuelve el 'row' tal como está o ajusta según lo que necesites
         return row;
@@ -565,7 +547,7 @@ export default {
 }
 
 .table-crypto th, .table-crypto td {
-  border: 3px groove #74a7c9; /* Borde discontinuo azul */
+  border: 3px groove #74a7c9;
   padding: 8px;
   text-align: center;
   text-transform: uppercase;

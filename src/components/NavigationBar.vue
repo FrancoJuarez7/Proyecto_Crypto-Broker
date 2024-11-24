@@ -1,11 +1,11 @@
 <template>
   <nav id="nav-container">
-    <ul>
+    <ul class="ppp">
       <li><router-link to="/buying-and-selling">BUYING AND SELLING</router-link> </li>
       <li><router-link to="/movement-history">MOVEMENT HISTORY</router-link> </li>
       <li><router-link to="/financial-and-investmentEvaluation">FINANCIAL AND INVESTMENT EVALUATION</router-link> </li>
-      <li><p> USER: {{ nameUser }}</p></li>
-      <li><button class="btn" @click="logout">Log out</button></li>
+      <p> USER: {{ nameUser }}</p>
+      <li><button class="btn" @click="logOut">Log out</button></li>
     </ul>
   </nav>
 </template>
@@ -17,18 +17,19 @@ import { mapGetters } from 'vuex';
 export default {
   name: 'NavegationBar',
   methods: {
+
     /**
- * Cierra la sesión del usuario eliminando los datos de autenticación
- * y deshabilitando la funcionalidad de volver hacia atrás en el historial del navegador.
+ * Cierra la sesión del usuario eliminando los datos de autenticación y deshabilitando la funcionalidad de volver
+ * hacia atrás en el historial del navegador.
  *
  * Este método realiza las siguientes acciones:
  * - Elimina los datos de autenticación almacenados en `localStorage` y `sessionStorage`.
  * - Redirige al usuario a la página principal (inicio).
  * - Desactiva la funcionalidad de volver hacia atrás en el historial del navegador.
  *
- * @returns {void} Este método no devuelve ningún valor.
+ * @returns {void} No retorna ningún valor..
  */
-    logout() {
+    logOut() {
       // Eliminar datos de autenticación
       localStorage.removeItem('authToken');
       sessionStorage.removeItem('userSession');
@@ -38,7 +39,7 @@ export default {
       window.history.pushState(null, null, window.location.href);
 
       window.addEventListener('popstate', () => {
-        // Redirigir de nuevo a la pantalla de inicio si el usuario intenta volver atrás
+        // Redirigir a la pantalla de inicio si el usuario intenta volver atrás
         this.$router.replace('/');
       });
     },
@@ -83,7 +84,15 @@ export default {
   transform: scale(1.2, 1.2);
 }
 
-/*BOTON*/
+p{
+  color: white;
+  font-weight: bold;
+}
+
+p:hover{
+  color: rgb(247, 166, 0);
+}
+
 .btn {
   text-align: center;
   width: 100px;

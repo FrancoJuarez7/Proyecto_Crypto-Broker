@@ -1,8 +1,9 @@
 <template>
 
   <div class="buy-sell-container">
+
+    <!-- PROCESO DE COMPRA-->
     <div>
-      <!-- PROCESO DE COMPRA-->
       <h3>PURCHASE OF CRYPTOCURRENCIES</h3>
 
       <select id="buyCrypto" v-model="selectedBuyCrypto">
@@ -34,8 +35,8 @@
     <!-- BARRA DE PROGRESO -->
     <ProgressBar v-if="loadingProgress > 0" :loadingProgress="loadingProgress" :showBar="showProgressBar"></ProgressBar>
 
+    <!-- PROCESO DE VENTA-->
     <div>
-      <!-- PROCESO DE VENTA-->
       <h3>SALE OF CRYPTOCURRENCIES</h3>
 
       <select id="saleCrypto" v-model="selectedSellCrypto">
@@ -122,17 +123,22 @@ export default {
  * Método asincrónico que maneja la condición de compra de criptomonedas.
  *
  * @async
- * @returns {Promise<void>} No retorna ningún valor, ya que es un proceso asíncrono que modifica el estado del componente.
+ * @returns {Promise<void>} No retorna ningún valor.
  */
     async purchaseCondition() {
-      this.buyCondition = this.selectedExchangeBuyCrypto && this.selectedBuyCrypto && this.quantityBuy > 0;
+      try {
+        this.buyCondition = this.selectedExchangeBuyCrypto && this.selectedBuyCrypto && this.quantityBuy > 0;
 
-      if (this.buyCondition) {
-        this.messagePriceSell = '';
-        this.resetSellFields();
+        if (this.buyCondition) {
+          this.messagePriceSell = '';
+          this.resetSellFields();
 
-        await this.fetchPrice();
-        this.messagePriceBuy = `${this.quantityBuy} ${this.selectedBuyCrypto} = ${this.purchasePrice}`;
+          await this.fetchPrice();
+          this.messagePriceBuy = `${this.quantityBuy} ${this.selectedBuyCrypto} = ${this.purchasePrice}`;
+        }
+      } catch (error) {
+        console.error('Error in purchaseCondition:', error);
+        this.setModalMessage('An error occurred while processing the purchase condition. Please try again later.', true);
       }
     },
 
@@ -140,80 +146,98 @@ export default {
  * Método asincrónico que maneja la condición de venta de criptomonedas.
  *
  * @async
- * @returns {Promise<void>} No retorna ningún valor, ya que es un proceso asíncrono que modifica el estado del componente.
+ * @returns {Promise<void>} No retorna ningún valor.
  */
     async saleCondition() {
-      this.sellCondition = this.selectedExchangeSellCrypto && this.selectedSellCrypto && this.quantitySell > 0;
+      try {
+        this.sellCondition = this.selectedExchangeSellCrypto && this.selectedSellCrypto && this.quantitySell > 0;
 
-      if (this.sellCondition) {
-        this.messagePriceBuy = '';
-        this.resetBuyFields();
+        if (this.sellCondition) {
+          this.messagePriceBuy = '';
+          this.resetBuyFields();
 
-        await this.fetchPrice();
-        this.messagePriceSell = `${this.quantitySell} ${this.selectedSellCrypto} = ${this.sellPrice}`;
+          await this.fetchPrice();
+          this.messagePriceSell = `${this.quantitySell} ${this.selectedSellCrypto} = ${this.sellPrice}`;
+        }
+      } catch (error) {
+        console.error('Error in saleCondition:', error);
+        this.setModalMessage('An error occurred while processing the sale condition. Please try again later.', true);
       }
     },
 
     /**
  * Método asincrónico que maneja la obtención de precios para compra y venta de criptomonedas.
  *
- * @returns {Promise<void>} No retorna ningún valor, ya que es un proceso asíncrono que modifica el estado interno del componente.
+ * @returns {Promise<void>} No retorna ningún valor.
  */
 
     async fetchPrice() {
-      if (this.isCalling) return;
+      try {
+        if (this.isCalling) return;
 
-      this.isCalling = true;
-      this.showProgressBar = this.buyCondition || this.sellCondition;
+        this.isCalling = true;
+        this.showProgressBar = this.buyCondition || this.sellCondition;
 
-      if (this.buyCondition) {
-        await this.handleFetchPrice(
-          'purchase',
-          this.selectedExchangeBuyCrypto,
-          this.selectedBuyCrypto,
-          this.quantityBuy,
-        );
+        if (this.buyCondition) {
+          await this.handleFetchPrice(
+            'purchase',
+            this.selectedExchangeBuyCrypto,
+            this.selectedBuyCrypto,
+            this.quantityBuy,
+          );
+        }
+
+        if (this.sellCondition) {
+          await this.handleFetchPrice(
+            'sale',
+            this.selectedExchangeSellCrypto,
+            this.selectedSellCrypto,
+            this.quantitySell,
+          );
+        }
+
+        this.isCalling = false;
+        this.showProgressBar = false;
+      } catch (error) {
+        console.error('Error fetching price:', error);
+        this.setModalMessage('An error occurred while fetching the price. Please try again later.', true);
+        this.isCalling = false;
+        this.showProgressBar = false;
       }
-
-      if (this.sellCondition) {
-        await this.handleFetchPrice(
-          'sale',
-          this.selectedExchangeSellCrypto,
-          this.selectedSellCrypto,
-          this.quantitySell,
-        );
-      }
-
-      this.isCalling = false;
-      this.showProgressBar = false;
     },
 
     /**
  * Maneja la obtención del precio para una operación de compra o venta.
- * Llama a `fetchCryptoPrice` para obtener el precio, y luego verifica si el precio obtenido es válido.
  *
  * @param {string} type - Tipo de operación, puede ser 'purchase' o 'sale'.
  * @param {string} exchange - Plataforma en el que se realizará la operación.
  * @param {string} crypto - Criptomoneda seleccionada para la operación.
  * @param {number} quantity - Cantidad de criptomonedas a comprar o vender.
- * @returns {Promise<void>} No retorna ningún valor. Realiza cambios en el estado interno del componente y muestra un modal en caso de error.
+ * @returns {Promise<void>} No retorna ningún valor.
 */
 
     async handleFetchPrice(type, exchange, crypto, quantity) {
-      await this.fetchCryptoPrice({
-        exchange,
-        crypto,
-        quantity,
-        type,
-      });
+      try {
+        await this.fetchCryptoPrice({
+          exchange,
+          crypto,
+          quantity,
+          type,
+        });
 
-      const price = type === 'purchase' ? this.purchasePrice : this.sellPrice;
+        const price = type === 'purchase' ? this.purchasePrice : this.sellPrice;
 
-      if ((type === 'purchase' && (price === null || Number.isNaN(price)))
-      || (type === 'sale' && (price === null || Number.isNaN(price)))) {
-        this.showModal = true;
-        this.showButton = true;
-        this.messageApp = type === 'purchase' ? this.buyErrorMessage : this.saleErrorMessage;
+        if ((type === 'purchase' && (price === null || Number.isNaN(price)))
+        || (type === 'sale' && (price === null || Number.isNaN(price)))) {
+          this.showModal = true;
+          this.showButton = true;
+          this.messageApp = type === 'purchase' ? this.buyErrorMessage : this.saleErrorMessage;
+          this.resetBuyFields();
+          this.resetSellFields();
+        }
+      } catch (error) {
+        console.error('Error fetching price:', error);
+        this.setModalMessage('An error occurred while fetching the price. Please try again later.', true);
         this.resetBuyFields();
         this.resetSellFields();
       }
@@ -221,7 +245,6 @@ export default {
 
     /**
  * Restablece los campos de la interfaz de compra a sus valores iniciales.
- * Se utiliza para limpiar los valores de los campos de compra después de realizar una operación o en caso de error.
  *
  * @returns {void} No retorna ningún valor.
 */
@@ -234,7 +257,6 @@ export default {
 
     /**
  * Restablece los campos de la interfaz de venta a sus valores iniciales.
- * Se utiliza para limpiar los valores de los campos de venta después de realizar una operación o en caso de error.
  *
  * @returns {void} No retorna ningún valor.
 */
@@ -272,9 +294,7 @@ export default {
 */
 
     validation(type) {
-      // Crea arrays de objetos para validar los datos y los posibles ERRORES.
-
-      const validations = {
+      const validations = { // Arrays de objetos para validar los datos y los posibles ERRORES.
         purchase: [
           { condition: !this.selectedExchangeBuyCrypto, message: '* No exchange has been selected.' },
           { condition: !this.selectedBuyCrypto, message: '* No cryptocurrency has been selected.' },
@@ -286,9 +306,6 @@ export default {
           { condition: this.quantitySell <= 0, message: '* The quantity must be greater than 0.' },
         ],
       };
-
-      /* Creo los 2 arrays de objetos (purchase y sale) y aca  en esta funcion con el type que recibe consulta, en esta funcion es una clave.
-     purchse(clave) : [arrays de objetos] (valor) */
 
       const errorMessages = [];
 
@@ -319,44 +336,49 @@ export default {
     },
 
     /**
- * Función que valida los datos de compra; si son correctos, los envía a la base de datos RESTDB.
- * Si no pasan la validación, muestra un mensaje de error.
+ * Función que valida los datos de compra; si son correctos, los envía a la base de datos RESTDB. Si no pasan la
+ * validación, muestra un mensaje de error.
  *
- * @returns {void} No retorna ningún valor directamente, pero maneja el proceso de compra y muestra errores si los hay.
+ * @returns {void} No retorna ningún valor, pero maneja el proceso de compra y muestra errores si los hay.
 */
 
     async makePurchase() {
-      if (!this.validation('purchase')) {
-        this.errorMessageSell = '';
-        return; // Si esto es falso, es porque no paso las validaciones
+      try {
+        if (!this.validation('purchase')) {
+          this.errorMessageSell = '';
+          return; // Si esto es falso, es porque no paso las validaciones
+        }
+
+        if (this.purchasePrice <= 0) {
+          this.errorMessageBuy = '* The purchase price must be greater than 0.';
+          return;
+        }
+
+        // Si pasa la validación, consulta el precio de compra por si ha variado.
+        await this.fetchPrice();
+
+        // Si todas las validaciones pasan, procede con la compra
+        const objectsDataPurchase = {
+          user_id: this.password,
+          action: 'purchase',
+          crypto_code: this.selectedBuyCrypto,
+          crypto_amount: this.quantityBuy,
+          money: this.purchasePrice,
+          datetime: this.getDateandTime(),
+        };
+        console.log(`COMPRA: datetime: ${objectsDataPurchase.datetime}`);
+        this.saveTransactionsPurchases(objectsDataPurchase);
+      } catch (error) {
+        console.error('Error making purchase:', error);
+        this.setModalMessage('An error occurred while processing the purchase. Please try again later.', true);
       }
-
-      if (this.purchasePrice <= 0) {
-        this.errorMessageBuy = '* The purchase price must be greater than 0.';
-        return;
-      }
-
-      // Si pasa la validación, consulta el precio de compra por si ha variado
-      await this.fetchPrice(); // Llama a la función para actualizar el precio de compra.
-
-      // Si todas las validaciones pasan, proceder con la compra
-      const objectsDataPurchase = {
-        user_id: this.password,
-        action: 'purchase',
-        crypto_code: this.selectedBuyCrypto,
-        crypto_amount: this.quantityBuy,
-        money: this.purchasePrice,
-        datetime: this.getDateandTime(),
-      };
-      console.log(`COMPRA: datetime: ${objectsDataPurchase.datetime}`);
-      this.saveTransactionsPurchases(objectsDataPurchase);
     },
 
     /**
  * Guarda los datos de la compra en la API de la base de datos (RESTDB).
  *
  * @param {Object} objectsDataPurchase Los datos de la compra (ej. usuario, criptomoneda, cantidad, precio, fecha/hora).
- * @returns {void} No retorna ningún valor directamente, pero maneja el proceso de guardar la compra y muestra mensajes de éxito o error.
+ * @returns {void} No retorna ningún valor, pero maneja el proceso de guardar la compra y muestra mensajes de éxito o error.
 */
 
     async saveTransactionsPurchases(objectsDataPurchase) {
@@ -374,6 +396,7 @@ export default {
         this.resetBuyFields(); // Resetea el formulario después de la compra
         this.resetSellFields();
         this.messagePriceBuy = '';
+        this.errorMessageSell = '';
       }
     },
 
@@ -391,91 +414,96 @@ export default {
     },
 
     /**
- * Realiza una operación de venta de criptomonedas.
- * Valida los datos de la venta. Si son correctos, obtiene los datos de la transacción del usuario. Si
- * la transacción es válida, procede con la venta.
+ * Realiza una operación de venta de criptomonedas. Valida los datos de la venta. Si son correctos, obtiene los datos de
+ * la transacción del usuario. Si la transacción es válida, procede con la venta.
  *
- * @returns {Promise<void>} No retorna ningún valor. Si ocurre un error, muestra un modal con el mensaje correspondiente y restablece los campos.
+ * @returns {Promise<void>} No retorna ningún valor.
 */
     async makeSale() {
-      if (!this.validation('sale')) {
-        this.errorMessageBuy = '';
-        return;
-      }
-      // Si esto es falso, es porque no paso las validaciones
+      try {
+        if (!this.validation('sale')) { // Si esto es falso, es porque no paso las validaciones
+          this.errorMessageBuy = '';
+          return;
+        }
 
-      if (this.sellPrice <= 0) {
-        this.errorMessageSell = 'The sale price must be greater than 0.';
-        return;
-      }
+        if (this.sellPrice <= 0) {
+          this.errorMessageSell = 'The sale price must be greater than 0.';
+          return;
+        }
 
-      const hasData = await this.getUserTransactionData();
+        const hasData = await this.getUserTransactionData();
 
-      if (!hasData) {
-        this.setModalMesagge('Failed to obtain transaction data. Please refresh the page or try again later.', true);
-        this.resetSellFields();
-        return;
+        if (!hasData) {
+          this.setModalMesagge('Failed to obtain transaction data. Please refresh the page or try again later.', true);
+          this.resetSellFields();
+          return;
+        }
+        if (this.userTransactionResults?.length <= 0) {
+          this.setModalMesagge('There are currently no transactions to display.', true);
+          this.resetSellFields();
+          return;
+        }
+        await this.operationSale();
+      } catch (error) {
+        console.error('Error making sale:', error);
+        this.setModalMessage('An error occurred while processing the sale. Please try again later.', true);
       }
-      if (this.userTransactionResults?.length <= 0) {
-        this.setModalMesagge('There are currently no transactions to display.', true);
-        this.resetSellFields();
-        return;
-      }
-      await this.operationSale();
     },
 
     /**
  * Realiza la operación de venta de criptomonedas, validando la disponibilidad de las monedas y la cantidad seleccionada.
- * Suma o resta las cantidades de monedas según las transacciones anteriores de compra o venta.
- * Si las validaciones son correctas, procede a registrar la venta en la base de datos.
  *
  * @returns {Promise<void>} No retorna ningún valor. Si ocurre un error, muestra un mensaje de error y restablece los campos de venta.
  */
 
     async operationSale() {
-      let quantityOfCoins = 0;
-      this.userTransactionResults.forEach((transactionData) => {
-        if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'purchase') {
-          quantityOfCoins += transactionData.crypto_amount; // Si es es compra, suma
-        } else if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'sale') {
-          quantityOfCoins -= transactionData.crypto_amount;
+      try {
+        let quantityOfCoins = 0;
+        this.userTransactionResults.forEach((transactionData) => {
+          if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'purchase') {
+            quantityOfCoins += transactionData.crypto_amount; // Si es es compra, suma
+          } else if (this.selectedSellCrypto === transactionData.crypto_code && transactionData.action === 'sale') {
+            quantityOfCoins -= transactionData.crypto_amount;
+          }
+        });
+
+        if (quantityOfCoins === 0) {
+          this.errorMessageSell = "* You don't have that type of currency available for sale.";
+          console.log('No cuenta con ese tipo de moneda para vender.');
+          this.resetSellFields();
+          return;
         }
-      });
 
-      if (quantityOfCoins === 0) {
-        this.errorMessageSell = "* You don't have that type of currency available for sale.";
-        console.log('No cuenta con ese tipo de moneda para vender.');
+        if (this.quantitySell > quantityOfCoins) {
+          this.errorMessageSell = "* You don't have that amount of coins available for sale.";
+          console.log('No cuenta con esa cantidad de monedas para vender.');
+          this.resetSellFields();
+          return;
+        }
+
+        await this.fetchPrice(); // Por si el precio llega a variar.
+
+        const objectsDataSale = {
+          user_id: this.password,
+          action: 'sale',
+          crypto_code: this.selectedSellCrypto,
+          crypto_amount: this.quantitySell,
+          money: this.sellPrice,
+          datetime: this.getDateandTime(),
+        };
+
+        console.log(`VENTA: datetime: ${objectsDataSale.datetime}`);
+
+        await this.saveSalesTransactions(objectsDataSale);
+      } catch (error) {
+        console.error('Error during sale operation:', error);
+        this.setModalMessage('An error occurred while processing the sale. Please try again later.', true);
         this.resetSellFields();
-        return;
       }
-
-      if (this.quantitySell > quantityOfCoins) {
-        this.errorMessageSell = "* You don't have that amount of coins available for sale.";
-        console.log('No cuenta con esa cantidad de monedas para vender.');
-        this.resetSellFields();
-        return;
-      }
-
-      await this.fetchPrice(); // Por si el precio llega a variar.
-
-      const objectsDataSale = {
-        user_id: this.password,
-        action: 'sale',
-        crypto_code: this.selectedSellCrypto,
-        crypto_amount: this.quantitySell,
-        money: this.sellPrice,
-        datetime: this.getDateandTime(),
-      };
-
-      console.log(`VENTA: datetime: ${objectsDataSale.datetime}`);
-
-      await this.saveSalesTransactions(objectsDataSale);
     },
 
     /**
  * Guarda la transacción de venta de criptomonedas en la base de datos.
- * Muestra un mensaje de procesamiento durante la operación y maneja errores en caso de fallos.
- * Si la venta es exitosa, muestra un mensaje de confirmación y restablece los campos de la venta.
  *
  * @param {Object} objectsDataSale - Los datos de la venta, incluyendo el ID del usuario, acción, criptomoneda, cantidad, precio y fecha.
  * @returns {Promise<void>} No retorna ningún valor. Muestra mensajes en la interfaz de usuario según el resultado de la operación.
@@ -500,22 +528,15 @@ export default {
     /**
  * Genera una cadena de fecha y hora en formato ISO 8601 en UTC, recortando los milisegundos.
  *
- * Esta función obtiene la fecha y hora actuales en UTC y las formatea en el estándar ISO 8601, eliminando los
- * milisegundos para obtener la precisión de segundos. Es útil en aplicaciones donde se requiere un formato
- * uniforme y sin zonas horarias locales, como al enviar datos a una API.
- *
- * @returns {string} La fecha y hora actual en formato `YYYY-MM-DDTHH:mm:ssZ`, en UTC.
- * Ejemplo: "2024-11-09T11:15Z"
+ * @returns {string} La fecha y hora actual en formato `YYYY-MM-DDTHH:mm:ssZ`, en UTC. Ejemplo: "2024-11-09T11:15Z"
  */
-
     getDateandTime() {
-      const now = new Date();
-      return `${now.toISOString().slice(0, -5)}Z`; // Recorta los milisegundos
+      const dateNow = new Date();
+      return `${dateNow.toISOString().slice(0, -5)}Z`; // Recorta los milisegundos
     },
 
     /**
- * Si los parametros son validos. Genera un mensaje con los detalles de la transacción de compra o venta
- * de criptomonedas.
+ * Si los parametros son validos. Genera un mensaje con los detalles de la transacción de compra o venta de criptomonedas.
  *
  * @param {number} quantity - La cantidad de criptomonedas a comprar o vender.
  * @param {string} crypto - El código de la criptomoneda (ej. 'BTC', 'ETH').
@@ -635,7 +656,7 @@ input[type="number"]:hover{
   font-weight: bold;
   margin-left: 17px;
   margin-bottom: 20px;
-  transition: background 300ms, box-shadow 300ms; /* Especificar las transiciones */
+  transition: background 300ms, box-shadow 300ms;
 }
 
 button:hover{

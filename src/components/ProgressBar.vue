@@ -1,10 +1,10 @@
 <template>
-    <div v-if="showBar" class="cartel">
+    <div v-if="showBar" class="sign">
       <div class="progress-bar" :style="{ width: `${loadingProgress}%` }">
         <div class="progress-fill" :style="{ width: `${loadingProgress}%` }"></div>
       </div>
     </div>
-  </template>
+</template>
 
 <script>
 export default {
@@ -23,7 +23,7 @@ export default {
 
 <style scoped>
 
-.cartel {
+.sign {
   position: fixed;
   background-color: rgba(0, 0, 0, 0.4);
   top: 0;
@@ -43,7 +43,7 @@ export default {
   width: 100%;
   justify-content: center;
   align-items: center;
-  margin-top: 150px;
+  margin-top: 180px;
 }
 
 .progress-fill {

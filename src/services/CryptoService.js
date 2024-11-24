@@ -17,8 +17,7 @@ export default {
   },
 
   PostSaveCryptoPurchase(objectsDataPurchase) {
-    // Crear una copia del objeto original
-    const purchaseData = { ...objectsDataPurchase, datetime: new Date().toISOString() };
+    const purchaseData = { ...objectsDataPurchase, datetime: new Date().toISOString() }; // Crea una copia del objeto original
     return apiClient2.post('/transactions', purchaseData);
   },
 

@@ -42,10 +42,7 @@ export default {
     /**
  * Cancela el proceso de ingreso de datos y limpia las propiedades relacionadas.
  *
- * Este método restablece las propiedades `password`, `nameUser`, `errorMessagePassword` y
- * `errorMessageNameUser` a sus valores iniciales, dejando el formulario listo para nuevos datos.
- *
- * @returns {void} No devuelve ningún valor..
+ * @returns {void} No retorna ningún valor.
  */
     cancel() {
       this.password = '';
@@ -57,11 +54,7 @@ export default {
     /**
  * Envía el formulario, validando los campos de nombre de usuario y contraseña.
  *
- * Este método valida si la contraseña y el nombre de usuario cumplen con los requisitos establecidos.
- * Si algún campo no es válido, se muestra un mensaje de error. Si ambos campos son válidos, actualiza los valores
- * de la contraseña, el nombre de usuario, y redirige al usuario a la página de compra y venta.
- *
- * @returns {void} No devuelve ningún valor.
+ * @returns {void} No retorna ningún valor.
  */
     submitForm() {
       this.errorMessagePassword = '';
@@ -93,13 +86,10 @@ export default {
     /**
  * Valida la contraseña y el nombre de usuario según ciertos criterios.
  *
- * Este método verifica que la contraseña tenga exactamente 8 caracteres alfanuméricos,
- * y que el nombre de usuario tenga entre 5 y 10 caracteres, al menos con una letra.
- *
  * @param {string} password La contraseña que se desea validar.
  * @param {string} nameUser El nombre de usuario que se desea validar.
- * @returns {Object} Un objeto con las propiedades `isValidPassword` e `isValidNameUser`,
- * que indican si los campos son válidos o no según las reglas definidas.
+ * @returns {Object} Un objeto con las propiedades `isValidPassword` e `isValidNameUser`, que indican si los campos son
+ * válidos o no según las reglas definidas.
  */
     isValid(password, nameUser) {
       const isValidPassword = password.length === 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
@@ -160,7 +150,7 @@ export default {
 }
 
 #user,
-#password{ /*ACA ACOMODA EL ICON EN EL INPUT */
+#password{ /*Coordinacion entre el icon y el input*/
   display: block;
   text-align: center;
   position: absolute;
@@ -218,7 +208,7 @@ button:hover{
 }
 
 #banner{
-  width: 87%; /*Ocupara el 80% del contenedor que lo contiene para que quede cimetrico con lo de arriba*/
+  width: 87%; /*Ocupara el 87% del contenedor que lo contiene para que quede cimetrico con lo de arriba*/
   height: 110px;
   border: 10px solid whitesmoke;
   box-shadow: 0px 0px 5px gray ;
